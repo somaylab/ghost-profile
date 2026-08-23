@@ -18,7 +18,7 @@ window.GhostHarPanel = (function () {
   // DOM references
   let $harView, $recToggleBtn, $recStatusPill, $reqCountPill, $bytesCountPill, $tabsCountPill;
   let $clearBtn, $exportHarBtn, $exportFlowBtn, $searchInput, $filterChips, $streamList;
-  let $inspectorModal, $inspectorClose, $inspectorContent;
+  let $inspectorModal, $inspectorClose, $inspectorContent, $navHarDot;
 
   function init(getTranslationFn) {
     if (isInitialized) return;
@@ -40,6 +40,7 @@ window.GhostHarPanel = (function () {
     $inspectorModal = document.getElementById('har-inspector-modal');
     $inspectorClose = document.getElementById('har-inspector-close');
     $inspectorContent = document.getElementById('har-inspector-body');
+    $navHarDot = document.getElementById('nav-har-dot');
 
     bindEvents(getTranslationFn);
     refreshState();
@@ -204,10 +205,12 @@ window.GhostHarPanel = (function () {
       $recToggleBtn.classList.add('recording');
       $recStatusPill.textContent = 'REC 🔴';
       $recStatusPill.className = 'har-stat-badge rec-active';
+      if ($navHarDot) $navHarDot.style.display = 'inline-block';
     } else {
       $recToggleBtn.classList.remove('recording');
       $recStatusPill.textContent = 'PAUSED ⏸';
       $recStatusPill.className = 'har-stat-badge rec-paused';
+      if ($navHarDot) $navHarDot.style.display = 'none';
     }
 
     if ($reqCountPill) $reqCountPill.textContent = `${stats.totalRequests || 0} reqs`;
