@@ -824,14 +824,6 @@
       }, 'function query() { [native code] }');
     } catch (_) {}
 
-    // Performance.now() — reduce precision to 100µs
-    try {
-      const _origPerfNow = Performance.prototype.now;
-      Performance.prototype.now = maskFn(function () {
-        return Math.round(_origPerfNow.call(this) * 10) / 10;
-      }, 'function now() { [native code] }');
-    } catch (_) {}
-
     // Consistent pdfViewerEnabled
     try { overrideGetter(Navigator.prototype, 'pdfViewerEnabled', () => true); } catch (_) {}
 
@@ -839,14 +831,6 @@
     try {
       if (!window.chrome) {
         window.chrome = { runtime: {}, loadTimes: function () {}, csi: function () {} };
-      }
-    } catch (_) {}
-
-    // speechSynthesis.getVoices — empty to prevent voice fingerprinting
-    try {
-      if ('speechSynthesis' in window) {
-        speechSynthesis.getVoices = maskFn(function () { return []; },
-          'function getVoices() { [native code] }');
       }
     } catch (_) {}
 
@@ -879,11 +863,11 @@
   }
 
   /* ──────────────────────────────────────────────────────────────
-   * 13. DYNAMIC PROFILE UPDATE LISTENER
+   * 13. DYNAMIC PROFILE UPDATE LISTENER (STEALTH CUSTOM EVENT)
    * ────────────────────────────────────────────────────────────── */
-  window.addEventListener('message', function (e) {
-    if (e.source === window && e.data && e.data.type === '__GHOST_PROFILE_UPDATE__') {
-      const { fullProfile, features } = e.data;
+  document.addEventListener('__GP_PROF_UPDATE__', function (e) {
+    if (e && e.detail) {
+      const { fullProfile, features } = e.detail;
       if (fullProfile && typeof fullProfile === 'object') {
         Object.assign(P, fullProfile);
       }
@@ -891,7 +875,7 @@
         Object.assign(FEATURES, features);
       }
     }
-  });
+  }, true);
 
   /* ──────────────────────────────────────────────────────────────
    * 14. HAR INTERACTION BREADCRUMBS & PAYLOAD RELAY
@@ -911,7 +895,7 @@
     return null;
   }
 
-  // Track Clicks & Form Submissions
+  // Track Clicks & Form Submissions safely without DOM reflows
   try {
     document.addEventListener('click', function (e) {
       try {
@@ -920,7 +904,7 @@
         const tag = target.tagName ? target.tagName.toLowerCase() : '';
         const id = target.id ? `#${target.id}` : '';
         const cls = target.className && typeof target.className === 'string' ? `.${target.className.trim().split(/\s+/).slice(0, 2).join('.')}` : '';
-        const text = (target.innerText || target.value || target.getAttribute('aria-label') || '').trim().substring(0, 30);
+        const text = (target.textContent || target.getAttribute('value') || target.getAttribute('aria-label') || '').trim().substring(0, 30);
         setAction(`Click <${tag}${id}${cls}> ${text ? `"${text}"` : ''}`);
       } catch (_) {}
     }, true);
@@ -945,7 +929,7 @@
     }, 'function open() { [native code] }');
   } catch (_) {}
 
-  // Hook fetch & XHR for request/response body capture
+  // Hook fetch & XHR for request/response body capture via private CustomEvent
   try {
     const _origFetch = window.fetch;
     window.fetch = maskFn(async function (input, init) {
@@ -972,16 +956,15 @@
       try {
         const clone = res.clone();
         clone.text().then(text => {
-          window.postMessage({
-            type: '__GHOST_HAR_PAYLOAD_RELAY__',
-            payload: {
+          document.dispatchEvent(new CustomEvent('__GP_HAR_RELAY__', {
+            detail: {
               url: res.url || url,
               method,
               requestBody: reqBody,
               responseBody: text ? text.substring(0, 200000) : '',
               action
             }
-          }, '*');
+          }));
         }).catch(() => {});
       } catch (_) {}
 

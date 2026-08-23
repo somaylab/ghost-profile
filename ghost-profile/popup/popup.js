@@ -386,7 +386,7 @@
     $identityEmpty.style.display = 'none';
     $identityData.style.display = 'block';
 
-    // Hero Label (e.g. Chrome 151 · WIN11 · RTX 3060)
+    // Hero Label (e.g. Chrome 135 · WIN11 · RTX 3060)
     $heroLabel.textContent = p.label || t('hero-custom');
 
     // Specs Grid

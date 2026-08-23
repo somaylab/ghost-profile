@@ -4,7 +4,7 @@
  * Runs in ISOLATED world at document_start.
  * 1. Synchronously reads profile config from storage
  * 2. Injects src/inject.js into page execution context
- * 3. Bridges updates via postMessage
+ * 3. Uses stealth CustomEvents to bridge payload & profile updates
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
@@ -39,36 +39,40 @@
       script.remove();
     } catch (_) {}
 
-    // Method 3: postMessage (for dynamic live updates)
+    // Method 3: Private CustomEvent (synchronous, no postMessage leak to page scripts)
     try {
-      window.postMessage({
-        type: '__GHOST_PROFILE_UPDATE__',
-        fullProfile: config.fullProfile,
-        features: config.features
-      }, '*');
+      document.dispatchEvent(new CustomEvent('__GP_PROF_UPDATE__', {
+        detail: {
+          fullProfile: config.fullProfile,
+          features: config.features
+        }
+      }));
     } catch (_) {}
   });
 
-  // Listen for relay messages from window (inject.js HAR payloads)
-  window.addEventListener('message', (e) => {
-    if (e.source === window && e.data && e.data.type === '__GHOST_HAR_PAYLOAD_RELAY__') {
-      try {
+  // Listen for relay messages from inject.js via private CustomEvent
+  document.addEventListener('__GP_HAR_RELAY__', (e) => {
+    try {
+      if (e && e.detail) {
         api.runtime.sendMessage({
           type: 'GHOST_HAR_RELAY_PAYLOAD',
-          payload: e.data.payload
+          payload: e.detail
         }).catch(() => {});
-      } catch (_) {}
-    }
-  });
+      }
+    } catch (_) {}
+  }, true);
 
   // Listen for relay messages from background/popup
   api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === 'GHOST_UPDATE_PROFILE') {
-      window.postMessage({
-        type: '__GHOST_PROFILE_UPDATE__',
-        fullProfile: msg.fullProfile || null,
-        features: msg.features
-      }, '*');
+      try {
+        document.dispatchEvent(new CustomEvent('__GP_PROF_UPDATE__', {
+          detail: {
+            fullProfile: msg.fullProfile || null,
+            features: msg.features
+          }
+        }));
+      } catch (_) {}
       sendResponse({ ok: true });
     }
 

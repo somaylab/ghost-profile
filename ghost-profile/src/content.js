@@ -4,6 +4,7 @@
  * Runs in ISOLATED world at document_start.
  * Bridges chrome.storage → inject.js (MAIN world) by passing
  * the FULL generated profile object.
+ * Uses stealth CustomEvents to prevent window.postMessage sniffing.
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
@@ -26,36 +27,40 @@
       document.documentElement.setAttribute('data-gp-cfg', JSON.stringify(config));
     } catch (_) {}
 
-    // Method 2: postMessage (for dynamic updates)
+    // Method 2: Private CustomEvent (synchronous, no postMessage leak to page scripts)
     try {
-      window.postMessage({
-        type: '__GHOST_PROFILE_UPDATE__',
-        fullProfile: config.fullProfile,
-        features: config.features
-      }, '*');
+      document.dispatchEvent(new CustomEvent('__GP_PROF_UPDATE__', {
+        detail: {
+          fullProfile: config.fullProfile,
+          features: config.features
+        }
+      }));
     } catch (_) {}
   });
 
-  // Listen for relay messages from window (inject.js HAR payloads)
-  window.addEventListener('message', (e) => {
-    if (e.source === window && e.data && e.data.type === '__GHOST_HAR_PAYLOAD_RELAY__') {
-      try {
+  // Listen for relay messages from inject.js via private CustomEvent
+  document.addEventListener('__GP_HAR_RELAY__', (e) => {
+    try {
+      if (e && e.detail) {
         chrome.runtime.sendMessage({
           type: 'GHOST_HAR_RELAY_PAYLOAD',
-          payload: e.data.payload
+          payload: e.detail
         }).catch(() => {});
-      } catch (_) {}
-    }
-  });
+      }
+    } catch (_) {}
+  }, true);
 
   // Listen for relay messages from popup/background
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === 'GHOST_UPDATE_PROFILE') {
-      window.postMessage({
-        type: '__GHOST_PROFILE_UPDATE__',
-        fullProfile: msg.fullProfile || null,
-        features: msg.features
-      }, '*');
+      try {
+        document.dispatchEvent(new CustomEvent('__GP_PROF_UPDATE__', {
+          detail: {
+            fullProfile: msg.fullProfile || null,
+            features: msg.features
+          }
+        }));
+      } catch (_) {}
       sendResponse({ ok: true });
     }
 

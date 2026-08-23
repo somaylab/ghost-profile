@@ -46,8 +46,8 @@ window.GhostGenerator = (function () {
     const chromeMatch = ua.match(/Chrome\/(\d+)\.(\d+)\.(\d+)\.(\d+)/);
     const edgeMatch = ua.match(/Edg\/(\d+\.\d+\.\d+\.\d+)/);
     
-    let chromeMajor = 151;
-    let chromeFull = '151.0.0.0';
+    let chromeMajor = 135;
+    let chromeFull = '135.0.7049.96';
     let isEdge = false;
     let edgeBuild = '';
     
