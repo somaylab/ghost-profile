@@ -100,6 +100,10 @@
     'lang-toggle-title': { en: 'Switch language (EN / ID)', id: 'Ganti bahasa (EN / ID)' },
     'theme-toggle-title': { en: 'Switch theme (Dark / Light)', id: 'Ganti tema (Gelap / Terang)' },
 
+    // Top Tabs
+    'nav-tab-spoof': { en: 'Identity & Spoofing', id: 'Identitas & Proteksi' },
+    'nav-tab-har': { en: 'HAR & Flow Control', id: 'Ruang Kontrol HAR' },
+
     // Waveform
     'waveform-title': { en: 'Signal → Noise visualization (Jitter increases with active modules)', id: 'Visualisasi Sinyal → Noise (Jitter meningkat sesuai modul aktif)' },
     'waveform-label': { en: 'SIGNAL → NOISE', id: 'SINYAL → NOISE' },
@@ -906,6 +910,12 @@
     if ($langToggle) $langToggle.title = t('lang-toggle-title');
     if ($themeToggle) $themeToggle.title = t('theme-toggle-title');
 
+    // Top Navigation Tabs
+    const $navSpoof = document.querySelector('#tab-btn-spoof span');
+    if ($navSpoof) $navSpoof.textContent = t('nav-tab-spoof');
+    const $navHar = document.querySelector('#tab-btn-har span');
+    if ($navHar) $navHar.textContent = t('nav-tab-har');
+
     // Waveform
     if ($waveformContainer) $waveformContainer.title = t('waveform-title');
     const $wfLabel = document.querySelector('.waveform-label');
@@ -1062,7 +1072,51 @@
   });
 
   /* ══════════════════════════════════════════════════════
-   * 10. INITIAL LOAD & RESTORE
+   * 10. TOP NAV TAB SWITCHING & HAR INITIALIZATION
+   * ══════════════════════════════════════════════════════ */
+  const $tabBtnSpoof = document.getElementById('tab-btn-spoof');
+  const $tabBtnHar = document.getElementById('tab-btn-har');
+  const $viewSpoof = document.getElementById('view-spoof');
+  const $viewHar = document.getElementById('view-har');
+
+  if ($tabBtnSpoof && $tabBtnHar && $viewSpoof && $viewHar) {
+    $tabBtnSpoof.addEventListener('click', () => {
+      $tabBtnSpoof.classList.add('active');
+      $tabBtnSpoof.setAttribute('aria-selected', 'true');
+      $tabBtnHar.classList.remove('active');
+      $tabBtnHar.setAttribute('aria-selected', 'false');
+
+      $viewSpoof.classList.add('active');
+      $viewSpoof.style.display = 'flex';
+      $viewHar.classList.remove('active');
+      $viewHar.style.display = 'none';
+    });
+
+    $tabBtnHar.addEventListener('click', () => {
+      $tabBtnHar.classList.add('active');
+      $tabBtnHar.setAttribute('aria-selected', 'true');
+      $tabBtnSpoof.classList.remove('active');
+      $tabBtnSpoof.setAttribute('aria-selected', 'false');
+
+      $viewHar.classList.add('active');
+      $viewHar.style.display = 'flex';
+      $viewSpoof.classList.remove('active');
+      $viewSpoof.style.display = 'none';
+
+      if (window.GhostHarPanel) {
+        window.GhostHarPanel.init(t);
+        window.GhostHarPanel.refreshState();
+      }
+    });
+  }
+
+  // Initialize HAR panel
+  if (window.GhostHarPanel) {
+    window.GhostHarPanel.init(t);
+  }
+
+  /* ══════════════════════════════════════════════════════
+   * 11. INITIAL LOAD & RESTORE
    * ══════════════════════════════════════════════════════ */
   if (chrome.runtime && chrome.runtime.sendMessage) {
     chrome.runtime.sendMessage({ type: 'GHOST_GET_CONFIG' }, (resp) => {

@@ -15,11 +15,14 @@
     "tabs",
     "scripting",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "declarativeNetRequestWithHostAccess",
+    "webRequest",
+    "webNavigation",
+    "downloads"
   ],
   "host_permissions": ["<all_urls>"],
   "background": {
-    "scripts": ["src/background.js"]
+    "scripts": ["src/har-engine.js", "src/background.js"]
   },
   "sidebar_action": {
     "default_icon": "icons/icon128.png",

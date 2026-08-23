@@ -62,16 +62,37 @@
       </div>
     </header>
 
-    <!-- ── Signature Waveform (Sinyal → Noise) ── -->
-    <div class="waveform-container" id="waveform-container" title="Visualisasi Sinyal → Noise (Jitter meningkat sesuai modul aktif)">
-      <div class="waveform-meta">
-        <span class="waveform-label">SINYAL → NOISE</span>
-        <span class="waveform-val mono" id="waveform-status">12/12 MASIF (NOISE TOTAL)</span>
+    <!-- ── Top Navigation Tab Bar (Chrome Style) ── -->
+    <nav class="top-nav-tabs" role="tablist">
+      <button class="nav-tab-btn active" id="tab-btn-spoof" role="tab" aria-selected="true" data-tab="spoof">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <span data-i18n="nav-tab-spoof">Identitas &amp; Proteksi</span>
+      </button>
+      <button class="nav-tab-btn" id="tab-btn-har" role="tab" aria-selected="false" data-tab="har">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span data-i18n="nav-tab-har">Ruang Kontrol HAR</span>
+        <span class="tab-live-dot" id="nav-har-dot"></span>
+      </button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════
+         VIEW 1: SPOOF & IDENTITY CONTROL
+         ══════════════════════════════════════════════════════ -->
+    <div class="view-panel active" id="view-spoof">
+      <!-- ── Signature Waveform (Sinyal → Noise) ── -->
+      <div class="waveform-container" id="waveform-container" title="Visualisasi Sinyal → Noise (Jitter meningkat sesuai modul aktif)">
+        <div class="waveform-meta">
+          <span class="waveform-label">SINYAL → NOISE</span>
+          <span class="waveform-val mono" id="waveform-status">12/12 MASIF (NOISE TOTAL)</span>
+        </div>
+        <svg class="waveform-svg" id="waveform-svg" width="100%" height="22" preserveAspectRatio="none" viewBox="0 0 360 22">
+          <path id="waveform-path" d="M 0,11 L 360,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
       </div>
-      <svg class="waveform-svg" id="waveform-svg" width="100%" height="22" preserveAspectRatio="none" viewBox="0 0 360 22">
-        <path id="waveform-path" d="M 0,11 L 360,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </div>
 
     <!-- ── Status Bar ── -->
     <div class="status-line" id="status-line">
@@ -586,6 +607,104 @@
         <span class="cta-text">Acak &amp; Terapkan</span>
       </button>
     </footer>
+    </div><!-- ── /#view-spoof ── -->
+
+    <!-- ══════════════════════════════════════════════════════
+         VIEW 2: HAR & INTERACTION FLOW RECORDER
+         ══════════════════════════════════════════════════════ -->
+    <div class="view-panel" id="view-har" style="display: none;">
+      
+      <!-- ── HAR Stats Summary Strip ── -->
+      <div class="har-stats-strip">
+        <div class="har-stat-item">
+          <span class="har-stat-label">STATUS</span>
+          <span class="har-stat-badge rec-paused" id="har-rec-status-pill">PAUSED ⏸</span>
+        </div>
+        <div class="har-stat-item">
+          <span class="har-stat-label">REQUESTS</span>
+          <span class="har-stat-val mono" id="har-req-count">0 reqs</span>
+        </div>
+        <div class="har-stat-item">
+          <span class="har-stat-label">TRANSFERRED</span>
+          <span class="har-stat-val mono" id="har-bytes-count">0 B</span>
+        </div>
+        <div class="har-stat-item">
+          <span class="har-stat-label">TABS / POPUPS</span>
+          <span class="har-stat-val mono" id="har-tabs-count">1 tab</span>
+        </div>
+      </div>
+
+      <!-- ── HAR Control Toolbar ── -->
+      <div class="har-toolbar">
+        <button class="har-btn har-btn-record" id="har-rec-toggle" title="Mulai / Jeda Perekaman Global">
+          <span class="rec-dot"></span>
+          <span class="btn-text">Rekam</span>
+        </button>
+        <button class="har-btn har-btn-sub" id="har-clear-btn" title="Hapus Buffer Log">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span class="btn-text">Bersihkan</span>
+        </button>
+        <button class="har-btn har-btn-sub" id="har-export-har-btn" title="Unduh Arsip Lengkap (.har)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span class="btn-text">Unduh .har</span>
+        </button>
+        <button class="har-btn har-btn-sub" id="har-export-flow-btn" title="Unduh Pohon Hubungan Multi-Tab (.json)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="6" y1="3" x2="6" y2="15"></line>
+            <circle cx="18" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <path d="M18 9a9 9 0 0 1-9 9"></path>
+          </svg>
+          <span class="btn-text">Flow JSON</span>
+        </button>
+      </div>
+
+      <!-- ── Search & Filter Chips Bar ── -->
+      <div class="har-filter-bar">
+        <div class="har-search-box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" class="har-search-input mono" id="har-search-input" placeholder="Filter URL / Host..." autocomplete="off" spellcheck="false">
+        </div>
+        <div class="har-filter-chips">
+          <button class="har-filter-chip active" data-filter="all">SEMUA</button>
+          <button class="har-filter-chip" data-filter="xhr">FETCH / XHR</button>
+          <button class="har-filter-chip" data-filter="auth">AUTH / SSO</button>
+          <button class="har-filter-chip" data-filter="doc">DOCS</button>
+          <button class="har-filter-chip" data-filter="media">MEDIA</button>
+        </div>
+      </div>
+
+      <!-- ── Live Network Stream List ── -->
+      <div class="har-stream-container">
+        <div class="har-stream-list" id="har-stream-list">
+          <!-- Dynamically populated by har-panel.js -->
+        </div>
+      </div>
+
+      <!-- ── Request Detail Inspector Modal / Drawer ── -->
+      <div class="har-inspector-modal" id="har-inspector-modal" style="display: none;">
+        <div class="inspector-card">
+          <div class="inspector-header">
+            <span class="inspector-title">Detail Request &amp; Response</span>
+            <button class="inspector-close-btn" id="har-inspector-close" title="Tutup">✕</button>
+          </div>
+          <div class="inspector-body" id="har-inspector-body">
+            <!-- Dynamically populated by openInspector() -->
+          </div>
+        </div>
+      </div>
+
+    </div><!-- ── /#view-har ── -->
 
   </div>
 

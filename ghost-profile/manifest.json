@@ -10,7 +10,10 @@
     "scripting",
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",
-    "sidePanel"
+    "sidePanel",
+    "webRequest",
+    "webNavigation",
+    "downloads"
   ],
   "host_permissions": ["<all_urls>"],
   "background": {

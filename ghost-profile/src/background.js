@@ -3,11 +3,18 @@
  * ═══════════════════════════════════════════════════════════════
  * Service worker that handles:
  * 1. HTTP header spoofing via declarativeNetRequest
- *    (dynamically built from generated profile objects)
  * 2. Profile storage & messaging relay
- * 3. Reload all/active tab support
+ * 3. Global Multi-Tab HAR & Flow Recording Engine
+ * 4. Reload all/active tab support
  * ═══════════════════════════════════════════════════════════════
  */
+
+// Import dedicated HAR engine
+try {
+  importScripts('har-engine.js');
+} catch (e) {
+  console.warn('[Ghost Profile] importScripts har-engine:', e);
+}
 
 /* ──────────────────────────────────────────────────────────────
  * SIDE PANEL BEHAVIOR
@@ -222,6 +229,58 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       });
     });
     return true; // async
+  }
+
+  // ── HAR RECORDER CONTROLS ──
+  if (msg.type === 'GHOST_HAR_START') {
+    const ok = self.GhostHarEngine ? self.GhostHarEngine.startRecording() : false;
+    sendResponse({ ok, stats: self.GhostHarEngine ? self.GhostHarEngine.getStats() : null });
+    return true;
+  }
+
+  if (msg.type === 'GHOST_HAR_STOP') {
+    const ok = self.GhostHarEngine ? self.GhostHarEngine.stopRecording() : false;
+    sendResponse({ ok, stats: self.GhostHarEngine ? self.GhostHarEngine.getStats() : null });
+    return true;
+  }
+
+  if (msg.type === 'GHOST_HAR_CLEAR') {
+    const ok = self.GhostHarEngine ? self.GhostHarEngine.clearRecording() : false;
+    sendResponse({ ok, stats: self.GhostHarEngine ? self.GhostHarEngine.getStats() : null });
+    return true;
+  }
+
+  if (msg.type === 'GHOST_HAR_GET_STATE') {
+    if (self.GhostHarEngine) {
+      sendResponse({
+        isRecording: self.GhostHarEngine.isRecording(),
+        stats: self.GhostHarEngine.getStats(),
+        entries: self.GhostHarEngine.getRecordedEntries()
+      });
+    } else {
+      sendResponse({ isRecording: false, stats: null, entries: [] });
+    }
+    return true;
+  }
+
+  if (msg.type === 'GHOST_HAR_EXPORT_HAR') {
+    const harLog = self.GhostHarEngine ? self.GhostHarEngine.buildHarLog() : null;
+    sendResponse({ ok: !!harLog, harLog });
+    return true;
+  }
+
+  if (msg.type === 'GHOST_HAR_EXPORT_FLOW') {
+    const flowSummary = self.GhostHarEngine ? self.GhostHarEngine.buildFlowSummary() : null;
+    sendResponse({ ok: !!flowSummary, flowSummary });
+    return true;
+  }
+
+  if (msg.type === 'GHOST_HAR_RELAY_PAYLOAD') {
+    if (self.GhostHarEngine && msg.payload) {
+      self.GhostHarEngine.handlePayloadRelay(msg.payload);
+    }
+    sendResponse({ ok: true });
+    return true;
   }
 });
 

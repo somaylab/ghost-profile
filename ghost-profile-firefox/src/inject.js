@@ -504,4 +504,100 @@
     }
   });
 
+  /* ──────────────────────────────────────────────────────────────
+   * 14. HAR INTERACTION BREADCRUMBS & PAYLOAD RELAY
+   * ────────────────────────────────────────────────────────────── */
+  let lastUserAction = null;
+  let lastActionTime = 0;
+
+  function setAction(actionStr) {
+    lastUserAction = actionStr;
+    lastActionTime = Date.now();
+  }
+
+  function getRecentAction() {
+    if (Date.now() - lastActionTime < 4000) {
+      return lastUserAction;
+    }
+    return null;
+  }
+
+  // Track Clicks & Form Submissions
+  try {
+    document.addEventListener('click', function (e) {
+      try {
+        const target = e.target;
+        if (!target) return;
+        const tag = target.tagName ? target.tagName.toLowerCase() : '';
+        const id = target.id ? `#${target.id}` : '';
+        const cls = target.className && typeof target.className === 'string' ? `.${target.className.trim().split(/\s+/).slice(0, 2).join('.')}` : '';
+        const text = (target.innerText || target.value || target.getAttribute('aria-label') || '').trim().substring(0, 30);
+        setAction(`Click <${tag}${id}${cls}> ${text ? `"${text}"` : ''}`);
+      } catch (_) {}
+    }, true);
+
+    document.addEventListener('submit', function (e) {
+      try {
+        const form = e.target;
+        const id = form && form.id ? `#${form.id}` : '';
+        const action = form && form.action ? ` -> ${form.action}` : '';
+        setAction(`Submit Form${id}${action}`);
+      } catch (_) {}
+    }, true);
+  } catch (_) {}
+
+  // Hook window.open for popup tracking
+  try {
+    const _origOpen = window.open;
+    window.open = maskFn(function (url, target, features) {
+      const uStr = url ? (typeof url === 'string' ? url : url.toString()) : '';
+      setAction(`window.open("${uStr}", target="${target || '_blank'}")`);
+      return _origOpen.apply(this, arguments);
+    }, 'function open() { [native code] }');
+  } catch (_) {}
+
+  // Hook fetch & XHR for request/response body capture
+  try {
+    const _origFetch = window.fetch;
+    window.fetch = maskFn(async function (input, init) {
+      let url = '';
+      let method = 'GET';
+      let reqBody = null;
+
+      try {
+        if (typeof input === 'string') url = input;
+        else if (input && input.url) url = input.url;
+
+        if (init) {
+          if (init.method) method = init.method.toUpperCase();
+          if (init.body) reqBody = init.body;
+        } else if (input && input.method) {
+          method = input.method.toUpperCase();
+        }
+      } catch (_) {}
+
+      const action = getRecentAction();
+      const res = await _origFetch.apply(this, arguments);
+
+      // Clone response to read text if needed for HAR relay
+      try {
+        const clone = res.clone();
+        clone.text().then(text => {
+          window.postMessage({
+            type: '__GHOST_HAR_PAYLOAD_RELAY__',
+            payload: {
+              url: res.url || url,
+              method,
+              requestBody: reqBody,
+              responseBody: text ? text.substring(0, 200000) : '',
+              action
+            }
+          }, '*');
+        }).catch(() => {});
+      } catch (_) {}
+
+      return res;
+    }, 'function fetch() { [native code] }');
+  } catch (_) {}
+
 })();

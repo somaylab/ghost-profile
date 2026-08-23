@@ -62,534 +62,654 @@
       </div>
     </header>
 
-    <!-- ── Signature Waveform (Sinyal → Noise) ── -->
-    <div class="waveform-container" id="waveform-container" title="Visualisasi Sinyal → Noise (Jitter meningkat sesuai modul aktif)">
-      <div class="waveform-meta">
-        <span class="waveform-label">SINYAL → NOISE</span>
-        <span class="waveform-val mono" id="waveform-status">12/12 MASIF (NOISE TOTAL)</span>
-      </div>
-      <svg class="waveform-svg" id="waveform-svg" width="100%" height="22" preserveAspectRatio="none" viewBox="0 0 360 22">
-        <path id="waveform-path" d="M 0,11 L 360,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </div>
-
-    <!-- ── Status Bar ── -->
-    <div class="status-line" id="status-line">
-      <span class="status-dot" id="status-dot"></span>
-      <span class="status-msg" id="status-msg">Stealth aktif · <span class="mono" id="module-counter">12/12</span> modul terlindungi</span>
-    </div>
-
-    <!-- ── Scrollable Body Area ── -->
-    <main class="app-body">
-
-      <!-- ── Identitas Aktif ── -->
-      <section class="identity-card" id="identity-card">
-        <div class="card-eyebrow">
-          <span>IDENTITAS AKTIF</span>
-          <span class="badge-mode mono" id="badge-mode">STEALTH</span>
-        </div>
-
-        <!-- Empty State -->
-        <div class="identity-empty" id="identity-empty" style="display: none;">
-          <div class="empty-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-          </div>
-          <div class="empty-content">
-            <div class="empty-title">Belum ada profil aktif</div>
-            <div class="empty-desc">Klik <strong>Acak &amp; Terapkan</strong> di bawah untuk membuat identitas baru.</div>
-          </div>
-        </div>
-
-        <!-- Active Details -->
-        <div class="identity-data" id="identity-data">
-          <div class="identity-hero">
-            <span class="hero-label mono" id="hero-label">Chrome 151 · WIN11 · RTX 3060</span>
-          </div>
-
-          <div class="specs-grid">
-            <div class="spec-item">
-              <span class="spec-k">Layar</span>
-              <span class="spec-v mono" id="spec-screen">1920×1080</span>
-            </div>
-            <div class="spec-item">
-              <span class="spec-k">CPU / RAM</span>
-              <span class="spec-v mono" id="spec-hardware">8c / 16GB</span>
-            </div>
-            <div class="spec-item">
-              <span class="spec-k">Zona Waktu</span>
-              <span class="spec-v mono" id="spec-tz">Asia/Jakarta</span>
-            </div>
-            <div class="spec-item">
-              <span class="spec-k">Bahasa</span>
-              <span class="spec-v mono" id="spec-lang">en-US, id</span>
-            </div>
-          </div>
-
-          <div class="seeds-row">
-            <div class="seed-pill" title="Canvas Noise Seed">
-              <span class="seed-k">CANVAS</span>
-              <span class="seed-v mono" id="seed-canvas">0.0000</span>
-            </div>
-            <div class="seed-pill" title="Audio Noise Seed">
-              <span class="seed-k">AUDIO</span>
-              <span class="seed-v mono" id="seed-audio">0.0000</span>
-            </div>
-            <div class="seed-pill" title="Font Noise Seed">
-              <span class="seed-k">FONT</span>
-              <span class="seed-v mono" id="seed-font">0.0000</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Category 1: Identitas Perangkat ── -->
-      <section class="category-group" id="cat-hardware">
-        <div class="category-header" data-toggle-cat="hardware" role="button" tabindex="0">
-          <div class="cat-title-wrap">
-            <span class="cat-eyebrow">IDENTITAS PERANGKAT</span>
-            <span class="cat-badge mono" id="cat-count-hardware">4/4</span>
-          </div>
-          <svg class="cat-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-        <div class="category-rows">
-          
-          <!-- Hardware Specs -->
-          <div class="module-row" data-row="ua">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
-                  <rect x="9" y="9" width="6" height="6"></rect>
-                  <line x1="9" y1="1" x2="9" y2="4"></line>
-                  <line x1="15" y1="1" x2="15" y2="4"></line>
-                  <line x1="9" y1="20" x2="9" y2="23"></line>
-                  <line x1="15" y1="20" x2="15" y2="23"></line>
-                  <line x1="20" y1="9" x2="23" y2="9"></line>
-                  <line x1="20" y1="14" x2="23" y2="14"></line>
-                  <line x1="1" y1="9" x2="4" y2="9"></line>
-                  <line x1="1" y1="14" x2="4" y2="14"></line>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Spesifikasi Perangkat</span>
-                <span class="module-desc">Menyamarkan CPU core, memori RAM, &amp; bahasa sistem</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="ua" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- Screen & Display -->
-          <div class="module-row" data-row="screen">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                  <line x1="8" y1="21" x2="16" y2="21"></line>
-                  <line x1="12" y1="17" x2="12" y2="21"></line>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Layar &amp; Tampilan</span>
-                <span class="module-desc">Memanipulasi resolusi layar, kedalaman warna, &amp; DPR</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="screen" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- Media Devices -->
-          <div class="module-row" data-row="mediaDevices">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                  <line x1="12" y1="19" x2="12" y2="23"></line>
-                  <line x1="8" y1="23" x2="16" y2="23"></line>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Perangkat Media</span>
-                <span class="module-desc">Mengacak daftar &amp; ID perangkat mikrofon/kamera</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="mediaDevices" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- Storage Estimate -->
-          <div class="module-row" data-row="storage">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <line x1="22" y1="12" x2="2" y2="12"></line>
-                  <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-                  <line x1="6" y1="16" x2="6.01" y2="16"></line>
-                  <line x1="10" y1="16" x2="10.01" y2="16"></line>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Estimasi Penyimpanan</span>
-                <span class="module-desc">Mengacak kuota penyimpanan &amp; persistensi API</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="storage" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ── Category 2: Sidik Jari Rendering ── -->
-      <section class="category-group" id="cat-rendering">
-        <div class="category-header" data-toggle-cat="rendering" role="button" tabindex="0">
-          <div class="cat-title-wrap">
-            <span class="cat-eyebrow">SIDIK JARI RENDERING</span>
-            <span class="cat-badge mono" id="cat-count-rendering">4/4</span>
-          </div>
-          <svg class="cat-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-        <div class="category-rows">
-          
-          <!-- Canvas Fingerprint -->
-          <div class="module-row" data-row="canvas">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
-                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
-                  <path d="M2 2l7.586 7.586"></path>
-                  <circle cx="11" cy="11" r="2"></circle>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Sidik Jari Canvas</span>
-                <span class="module-desc">Injeksi noise pixel deterministik (Mulberry32)</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="canvas" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- WebGL Fingerprint -->
-          <div class="module-row" data-row="webgl">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <polygon points="12 2 2 22 22 22"></polygon>
-                  <circle cx="12" cy="15" r="2"></circle>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Sidik Jari WebGL</span>
-                <span class="module-desc">Memanipulasi vendor GPU &amp; unmasked renderer</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="webgl" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- AudioContext Deep -->
-          <div class="module-row" data-row="audio">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">AudioContext Mendalam</span>
-                <span class="module-desc">Injeksi 6 lapis noise pada analyser, buffer &amp; osilator</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="audio" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- Font Enumeration Noise -->
-          <div class="module-row" data-row="fonts">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <polyline points="4 7 4 4 20 4 20 7"></polyline>
-                  <line x1="9" y1="20" x2="15" y2="20"></line>
-                  <line x1="12" y1="4" x2="12" y2="20"></line>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Noise Deteksi Font</span>
-                <span class="module-desc">Perturbasi mikro-metrik measureText (±0.1px)</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="fonts" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ── Category 3: Jaringan & Lingkungan ── -->
-      <section class="category-group" id="cat-network">
-        <div class="category-header" data-toggle-cat="network" role="button" tabindex="0">
-          <div class="cat-title-wrap">
-            <span class="cat-eyebrow">JARINGAN &amp; LINGKUNGAN</span>
-            <span class="cat-badge mono" id="cat-count-network">5/5</span>
-          </div>
-          <svg class="cat-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-        <div class="category-rows">
-          
-          <!-- Timezone Row + Inline Trigger -->
-          <div class="module-row tz-module-row" data-row="timezone">
-            <div class="module-left" id="tz-row-trigger">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-              </div>
-              <div class="module-info">
-                <div class="tz-inline-title">
-                  <span class="module-name">Zona Waktu</span>
-                  <span class="tz-status-pill mono" id="tz-status-pill">Acak ▸</span>
-                </div>
-                <span class="module-desc">Memanipulasi Intl.DateTimeFormat &amp; offset UTC</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="timezone" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- Timezone Selector Dropdown Panel (inside category) -->
-          <div class="tz-selector-panel" id="tz-selector-panel" style="display: none;">
-            <div class="tz-panel-header">
-              <div class="tz-search-box">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" class="tz-search-input" id="tz-search-input" placeholder="Cari kota / zona waktu..." autocomplete="off" spellcheck="false">
-              </div>
-              <button class="tz-reset-btn" id="tz-reset-btn" title="Kembalikan ke zona waktu acak">Acak</button>
-            </div>
-            <div class="tz-region-tabs" id="tz-region-tabs">
-              <button class="region-tab active" data-region="all">Semua</button>
-              <button class="region-tab" data-region="Asia">Asia</button>
-              <button class="region-tab" data-region="America">Amerika</button>
-              <button class="region-tab" data-region="Europe">Eropa</button>
-              <button class="region-tab" data-region="Africa">Afrika</button>
-              <button class="region-tab" data-region="Oceania">Oseania</button>
-            </div>
-            <div class="tz-scroll-list" id="tz-scroll-list">
-              <!-- Populated by JS -->
-            </div>
-          </div>
-
-          <!-- Language Row + Inline Trigger -->
-          <div class="module-row lang-module-row" data-row="language">
-            <div class="module-left" id="lang-row-trigger">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="2" y1="12" x2="22" y2="12"></line>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-              </div>
-              <div class="module-info">
-                <div class="lang-inline-title">
-                  <span class="module-name">Bahasa Browser</span>
-                  <span class="lang-status-pill mono" id="lang-status-pill">Acak ▸</span>
-                </div>
-                <span class="module-desc">Menyamarkan navigator.languages &amp; locale</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="language" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- Language Selector Dropdown Panel (inside category) -->
-          <div class="lang-selector-panel" id="lang-selector-panel" style="display: none;">
-            <div class="lang-panel-header">
-              <div class="lang-search-box">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" class="lang-search-input" id="lang-search-input" placeholder="Cari bahasa / kode..." autocomplete="off" spellcheck="false">
-              </div>
-              <button class="lang-reset-btn" id="lang-reset-btn" title="Kembalikan ke bahasa acak">Acak</button>
-            </div>
-            <div class="lang-region-tabs" id="lang-region-tabs">
-              <button class="lang-tab active" data-lang-region="all">Semua</button>
-              <button class="lang-tab" data-lang-region="Asia">Asia</button>
-              <button class="lang-tab" data-lang-region="Europe">Eropa</button>
-              <button class="lang-tab" data-lang-region="Americas">Amerika</button>
-              <button class="lang-tab" data-lang-region="Africa">Afrika &amp; Timteng</button>
-            </div>
-            <div class="lang-scroll-list" id="lang-scroll-list">
-              <!-- Populated by JS -->
-            </div>
-          </div>
-
-          <!-- WebRTC Leak Guard -->
-          <div class="module-row" data-row="webrtc">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Proteksi Kebocoran WebRTC</span>
-                <span class="module-desc">Mencegah kebocoran IP lokal via ICE candidate</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="webrtc" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- CSS matchMedia -->
-          <div class="module-row" data-row="matchMedia">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="5"></circle>
-                  <line x1="12" y1="1" x2="12" y2="3"></line>
-                  <line x1="12" y1="21" x2="12" y2="23"></line>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                  <line x1="1" y1="12" x2="3" y2="12"></line>
-                  <line x1="21" y1="12" x2="23" y2="12"></line>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">CSS matchMedia</span>
-                <span class="module-desc">Sinkronisasi preferensi tema gelap/terang</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="matchMedia" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-          <!-- Misc Protections -->
-          <div class="module-row" data-row="misc">
-            <div class="module-left">
-              <div class="module-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-              </div>
-              <div class="module-info">
-                <span class="module-name">Proteksi Tambahan</span>
-                <span class="module-desc">Menyamarkan flag webdriver &amp; timer presisi</span>
-              </div>
-            </div>
-            <label class="switch-toggle row-toggle">
-              <input type="checkbox" data-feature="misc" checked>
-              <span class="switch-slider"></span>
-            </label>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ── Data Vault (Export / Import) ── -->
-      <section class="vault-section">
-        <div class="vault-header">
-          <span class="cat-eyebrow">DATA SIDIK JARI</span>
-        </div>
-        <div class="vault-actions">
-          <button class="vault-btn" id="vault-export-btn" title="Salin profil sidik jari saat ini dalam format JSON">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span>Salin JSON</span>
-          </button>
-          <button class="vault-btn" id="vault-import-toggle" title="Tempel dan terapkan profil sidik jari yang disimpan">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Impor Profil</span>
-          </button>
-        </div>
-
-        <div class="vault-panel" id="vault-panel" style="display: none;">
-          <textarea class="vault-textarea mono" id="vault-textarea" placeholder="Tempel JSON sidik jari di sini..." spellcheck="false"></textarea>
-          <div class="vault-panel-ctrl">
-            <button class="vault-apply-btn" id="vault-apply-btn">Terapkan Sidik Jari</button>
-            <button class="vault-cancel-btn" id="vault-cancel-btn">Batal</button>
-          </div>
-          <div class="vault-feedback" id="vault-feedback"></div>
-        </div>
-      </section>
-
-    </main>
-
-    <!-- ── Sticky Bottom Action Bar ── -->
-    <footer class="app-footer">
-      <div class="reload-scope-row">
-        <span class="reload-label">Muat ulang semua tab terbuka</span>
-        <label class="switch-toggle mini-toggle">
-          <input type="checkbox" id="reload-all" checked>
-          <span class="switch-slider"></span>
-        </label>
-      </div>
-
-      <button class="cta-primary-btn" id="apply-btn">
-        <svg class="cta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 4 23 10 17 10"></polyline>
-          <polyline points="1 20 1 14 7 14"></polyline>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+    <!-- ── Top Navigation Tab Bar (Chrome Style) ── -->
+    <nav class="top-nav-tabs" role="tablist">
+      <button class="nav-tab-btn active" id="tab-btn-spoof" role="tab" aria-selected="true" data-tab="spoof">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
         </svg>
-        <span class="cta-text">Acak &amp; Terapkan</span>
+        <span data-i18n="nav-tab-spoof">Identitas &amp; Proteksi</span>
       </button>
-    </footer>
+      <button class="nav-tab-btn" id="tab-btn-har" role="tab" aria-selected="false" data-tab="har">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span data-i18n="nav-tab-har">Ruang Kontrol HAR</span>
+        <span class="tab-live-dot" id="nav-har-dot"></span>
+      </button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════
+         VIEW 1: SPOOF & IDENTITY CONTROL
+         ══════════════════════════════════════════════════════ -->
+    <div class="view-panel active" id="view-spoof">
+      <!-- ── Signature Waveform (Sinyal → Noise) ── -->
+      <div class="waveform-container" id="waveform-container" title="Visualisasi Sinyal → Noise (Jitter meningkat sesuai modul aktif)">
+        <div class="waveform-meta">
+          <span class="waveform-label">SINYAL → NOISE</span>
+          <span class="waveform-val mono" id="waveform-status">12/12 MASIF (NOISE TOTAL)</span>
+        </div>
+        <svg class="waveform-svg" id="waveform-svg" width="100%" height="22" preserveAspectRatio="none" viewBox="0 0 360 22">
+          <path id="waveform-path" d="M 0,11 L 360,11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+
+      <!-- ── Status Bar ── -->
+      <div class="status-line" id="status-line">
+        <span class="status-dot" id="status-dot"></span>
+        <span class="status-msg" id="status-msg">Stealth aktif · <span class="mono" id="module-counter">12/12</span> modul terlindungi</span>
+      </div>
+
+      <!-- ── Scrollable Body Area ── -->
+      <main class="app-body">
+
+        <!-- ── Identitas Aktif ── -->
+        <section class="identity-card" id="identity-card">
+          <div class="card-eyebrow">
+            <span>IDENTITAS AKTIF</span>
+            <span class="badge-mode mono" id="badge-mode">STEALTH</span>
+          </div>
+
+          <!-- Empty State -->
+          <div class="identity-empty" id="identity-empty" style="display: none;">
+            <div class="empty-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+            <div class="empty-content">
+              <div class="empty-title">Belum ada profil aktif</div>
+              <div class="empty-desc">Klik <strong>Acak &amp; Terapkan</strong> di bawah untuk membuat identitas baru.</div>
+            </div>
+          </div>
+
+          <!-- Active Details -->
+          <div class="identity-data" id="identity-data">
+            <div class="identity-hero">
+              <span class="hero-label mono" id="hero-label">Firefox 135 · WIN11 · RTX 3060</span>
+            </div>
+
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-k">Layar</span>
+                <span class="spec-v mono" id="spec-screen">1920×1080</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">CPU / RAM</span>
+                <span class="spec-v mono" id="spec-hardware">8c / 16GB</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Zona Waktu</span>
+                <span class="spec-v mono" id="spec-tz">Asia/Jakarta</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Bahasa</span>
+                <span class="spec-v mono" id="spec-lang">en-US, id</span>
+              </div>
+            </div>
+
+            <div class="seeds-row">
+              <div class="seed-pill" title="Canvas Noise Seed">
+                <span class="seed-k">CANVAS</span>
+                <span class="seed-v mono" id="seed-canvas">0.0000</span>
+              </div>
+              <div class="seed-pill" title="Audio Noise Seed">
+                <span class="seed-k">AUDIO</span>
+                <span class="seed-v mono" id="seed-audio">0.0000</span>
+              </div>
+              <div class="seed-pill" title="Font Noise Seed">
+                <span class="seed-k">FONT</span>
+                <span class="seed-v mono" id="seed-font">0.0000</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Category 1: Identitas Perangkat ── -->
+        <section class="category-group" id="cat-hardware">
+          <div class="category-header" data-toggle-cat="hardware" role="button" tabindex="0">
+            <div class="cat-title-wrap">
+              <span class="cat-eyebrow">IDENTITAS PERANGKAT</span>
+              <span class="cat-badge mono" id="cat-count-hardware">4/4</span>
+            </div>
+            <svg class="cat-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <div class="category-rows">
+            
+            <!-- Hardware Specs -->
+            <div class="module-row" data-row="ua">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                    <rect x="9" y="9" width="6" height="6"></rect>
+                    <line x1="9" y1="1" x2="9" y2="4"></line>
+                    <line x1="15" y1="1" x2="15" y2="4"></line>
+                    <line x1="9" y1="20" x2="9" y2="23"></line>
+                    <line x1="15" y1="20" x2="15" y2="23"></line>
+                    <line x1="20" y1="9" x2="23" y2="9"></line>
+                    <line x1="20" y1="14" x2="23" y2="14"></line>
+                    <line x1="1" y1="9" x2="4" y2="9"></line>
+                    <line x1="1" y1="14" x2="4" y2="14"></line>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Spesifikasi Perangkat</span>
+                  <span class="module-desc">Menyamarkan CPU core, memori RAM, &amp; bahasa sistem</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="ua" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Screen & Display -->
+            <div class="module-row" data-row="screen">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Layar &amp; Tampilan</span>
+                  <span class="module-desc">Memanipulasi resolusi layar, kedalaman warna, &amp; DPR</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="screen" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Media Devices -->
+            <div class="module-row" data-row="mediaDevices">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Perangkat Media</span>
+                  <span class="module-desc">Mengacak daftar &amp; ID perangkat mikrofon/kamera</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="mediaDevices" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Storage Estimate -->
+            <div class="module-row" data-row="storage">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="22" y1="12" x2="2" y2="12"></line>
+                    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                    <line x1="6" y1="16" x2="6.01" y2="16"></line>
+                    <line x1="10" y1="16" x2="10.01" y2="16"></line>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Estimasi Penyimpanan</span>
+                  <span class="module-desc">Mengacak kuota penyimpanan &amp; persistensi API</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="storage" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ── Category 2: Sidik Jari Rendering ── -->
+        <section class="category-group" id="cat-rendering">
+          <div class="category-header" data-toggle-cat="rendering" role="button" tabindex="0">
+            <div class="cat-title-wrap">
+              <span class="cat-eyebrow">SIDIK JARI RENDERING</span>
+              <span class="cat-badge mono" id="cat-count-rendering">4/4</span>
+            </div>
+            <svg class="cat-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <div class="category-rows">
+            
+            <!-- Canvas Fingerprint -->
+            <div class="module-row" data-row="canvas">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                    <path d="M2 2l7.586 7.586"></path>
+                    <circle cx="11" cy="11" r="2"></circle>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Sidik Jari Canvas</span>
+                  <span class="module-desc">Injeksi noise pixel deterministik (Mulberry32)</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="canvas" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- WebGL Fingerprint -->
+            <div class="module-row" data-row="webgl">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polygon points="12 2 2 22 22 22"></polygon>
+                    <circle cx="12" cy="15" r="2"></circle>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Sidik Jari WebGL</span>
+                  <span class="module-desc">Memanipulasi vendor GPU &amp; unmasked renderer</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="webgl" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- AudioContext Deep -->
+            <div class="module-row" data-row="audio">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">AudioContext Mendalam</span>
+                  <span class="module-desc">Injeksi 6 lapis noise pada analyser, buffer &amp; osilator</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="audio" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Font Enumeration Noise -->
+            <div class="module-row" data-row="fonts">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                    <line x1="9" y1="20" x2="15" y2="20"></line>
+                    <line x1="12" y1="4" x2="12" y2="20"></line>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Noise Deteksi Font</span>
+                  <span class="module-desc">Perturbasi mikro-metrik measureText (±0.1px)</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="fonts" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ── Category 3: Jaringan & Lingkungan ── -->
+        <section class="category-group" id="cat-network">
+          <div class="category-header" data-toggle-cat="network" role="button" tabindex="0">
+            <div class="cat-title-wrap">
+              <span class="cat-eyebrow">JARINGAN &amp; LINGKUNGAN</span>
+              <span class="cat-badge mono" id="cat-count-network">5/5</span>
+            </div>
+            <svg class="cat-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <div class="category-rows">
+            
+            <!-- Timezone Row + Inline Trigger -->
+            <div class="module-row tz-module-row" data-row="timezone">
+              <div class="module-left" id="tz-row-trigger">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <div class="tz-inline-title">
+                    <span class="module-name">Zona Waktu</span>
+                    <span class="tz-status-pill mono" id="tz-status-pill">Acak ▸</span>
+                  </div>
+                  <span class="module-desc">Memanipulasi Intl.DateTimeFormat &amp; offset UTC</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="timezone" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Timezone Selector Dropdown Panel (inside category) -->
+            <div class="tz-selector-panel" id="tz-selector-panel" style="display: none;">
+              <div class="tz-panel-header">
+                <div class="tz-search-box">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" class="tz-search-input" id="tz-search-input" placeholder="Cari kota / zona waktu..." autocomplete="off" spellcheck="false">
+                </div>
+                <button class="tz-reset-btn" id="tz-reset-btn" title="Kembalikan ke zona waktu acak">Acak</button>
+              </div>
+              <div class="tz-region-tabs" id="tz-region-tabs">
+                <button class="region-tab active" data-region="all">Semua</button>
+                <button class="region-tab" data-region="Asia">Asia</button>
+                <button class="region-tab" data-region="America">Amerika</button>
+                <button class="region-tab" data-region="Europe">Eropa</button>
+                <button class="region-tab" data-region="Africa">Afrika</button>
+                <button class="region-tab" data-region="Oceania">Oseania</button>
+              </div>
+              <div class="tz-scroll-list" id="tz-scroll-list">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Language Row + Inline Trigger -->
+            <div class="module-row lang-module-row" data-row="language">
+              <div class="module-left" id="lang-row-trigger">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <div class="lang-inline-title">
+                    <span class="module-name">Bahasa Browser</span>
+                    <span class="lang-status-pill mono" id="lang-status-pill">Acak ▸</span>
+                  </div>
+                  <span class="module-desc">Menyamarkan navigator.languages &amp; locale</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="language" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Language Selector Dropdown Panel (inside category) -->
+            <div class="lang-selector-panel" id="lang-selector-panel" style="display: none;">
+              <div class="lang-panel-header">
+                <div class="lang-search-box">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" class="lang-search-input" id="lang-search-input" placeholder="Cari bahasa / kode..." autocomplete="off" spellcheck="false">
+                </div>
+                <button class="lang-reset-btn" id="lang-reset-btn" title="Kembalikan ke bahasa acak">Acak</button>
+              </div>
+              <div class="lang-region-tabs" id="lang-region-tabs">
+                <button class="lang-tab active" data-lang-region="all">Semua</button>
+                <button class="lang-tab" data-lang-region="Asia">Asia</button>
+                <button class="lang-tab" data-lang-region="Europe">Eropa</button>
+                <button class="lang-tab" data-lang-region="Americas">Amerika</button>
+                <button class="lang-tab" data-lang-region="Africa">Afrika &amp; Timteng</button>
+              </div>
+              <div class="lang-scroll-list" id="lang-scroll-list">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- WebRTC Leak Guard -->
+            <div class="module-row" data-row="webrtc">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Proteksi Kebocoran WebRTC</span>
+                  <span class="module-desc">Mencegah kebocoran IP lokal via ICE candidate</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="webrtc" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- CSS matchMedia -->
+            <div class="module-row" data-row="matchMedia">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">CSS matchMedia</span>
+                  <span class="module-desc">Sinkronisasi preferensi tema gelap/terang</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="matchMedia" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+            <!-- Misc Protections -->
+            <div class="module-row" data-row="misc">
+              <div class="module-left">
+                <div class="module-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </div>
+                <div class="module-info">
+                  <span class="module-name">Proteksi Tambahan</span>
+                  <span class="module-desc">Menyamarkan flag webdriver &amp; timer presisi</span>
+                </div>
+              </div>
+              <label class="switch-toggle row-toggle">
+                <input type="checkbox" data-feature="misc" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ── Data Vault (Export / Import) ── -->
+        <section class="vault-section">
+          <div class="vault-header">
+            <span class="cat-eyebrow">DATA SIDIK JARI</span>
+          </div>
+          <div class="vault-actions">
+            <button class="vault-btn" id="vault-export-btn" title="Salin profil sidik jari saat ini dalam format JSON">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Salin JSON</span>
+            </button>
+            <button class="vault-btn" id="vault-import-toggle" title="Tempel dan terapkan profil sidik jari yang disimpan">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Impor Profil</span>
+            </button>
+          </div>
+
+          <div class="vault-panel" id="vault-panel" style="display: none;">
+            <textarea class="vault-textarea mono" id="vault-textarea" placeholder="Tempel JSON sidik jari di sini..." spellcheck="false"></textarea>
+            <div class="vault-panel-ctrl">
+              <button class="vault-apply-btn" id="vault-apply-btn">Terapkan Sidik Jari</button>
+              <button class="vault-cancel-btn" id="vault-cancel-btn">Batal</button>
+            </div>
+            <div class="vault-feedback" id="vault-feedback"></div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- ── Sticky Bottom Action Bar ── -->
+      <footer class="app-footer">
+        <div class="reload-scope-row">
+          <span class="reload-label">Muat ulang semua tab terbuka</span>
+          <label class="switch-toggle mini-toggle">
+            <input type="checkbox" id="reload-all" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+
+        <button class="cta-primary-btn" id="apply-btn">
+          <svg class="cta-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          <span class="cta-text">Acak &amp; Terapkan</span>
+        </button>
+      </footer>
+    </div><!-- ── /#view-spoof ── -->
+
+    <!-- ══════════════════════════════════════════════════════
+         VIEW 2: HAR & INTERACTION FLOW RECORDER
+         ══════════════════════════════════════════════════════ -->
+    <div class="view-panel" id="view-har" style="display: none;">
+      
+      <!-- ── HAR Stats Summary Strip ── -->
+      <div class="har-stats-strip">
+        <div class="har-stat-item">
+          <span class="har-stat-label">STATUS</span>
+          <span class="har-stat-badge rec-paused" id="har-rec-status-pill">PAUSED ⏸</span>
+        </div>
+        <div class="har-stat-item">
+          <span class="har-stat-label">REQUESTS</span>
+          <span class="har-stat-val mono" id="har-req-count">0 reqs</span>
+        </div>
+        <div class="har-stat-item">
+          <span class="har-stat-label">TRANSFERRED</span>
+          <span class="har-stat-val mono" id="har-bytes-count">0 B</span>
+        </div>
+        <div class="har-stat-item">
+          <span class="har-stat-label">TABS / POPUPS</span>
+          <span class="har-stat-val mono" id="har-tabs-count">1 tab</span>
+        </div>
+      </div>
+
+      <!-- ── HAR Control Toolbar ── -->
+      <div class="har-toolbar">
+        <button class="har-btn har-btn-record" id="har-rec-toggle" title="Mulai / Jeda Perekaman Global">
+          <span class="rec-dot"></span>
+          <span class="btn-text">Rekam</span>
+        </button>
+        <button class="har-btn har-btn-sub" id="har-clear-btn" title="Hapus Buffer Log">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span class="btn-text">Bersihkan</span>
+        </button>
+        <button class="har-btn har-btn-sub" id="har-export-har-btn" title="Unduh Arsip Lengkap (.har)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span class="btn-text">Unduh .har</span>
+        </button>
+        <button class="har-btn har-btn-sub" id="har-export-flow-btn" title="Unduh Pohon Hubungan Multi-Tab (.json)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="6" y1="3" x2="6" y2="15"></line>
+            <circle cx="18" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <path d="M18 9a9 9 0 0 1-9 9"></path>
+          </svg>
+          <span class="btn-text">Flow JSON</span>
+        </button>
+      </div>
+
+      <!-- ── Search & Filter Chips Bar ── -->
+      <div class="har-filter-bar">
+        <div class="har-search-box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" class="har-search-input mono" id="har-search-input" placeholder="Filter URL / Host..." autocomplete="off" spellcheck="false">
+        </div>
+        <div class="har-filter-chips">
+          <button class="har-filter-chip active" data-filter="all">SEMUA</button>
+          <button class="har-filter-chip" data-filter="xhr">FETCH / XHR</button>
+          <button class="har-filter-chip" data-filter="auth">AUTH / SSO</button>
+          <button class="har-filter-chip" data-filter="doc">DOCS</button>
+          <button class="har-filter-chip" data-filter="media">MEDIA</button>
+        </div>
+      </div>
+
+      <!-- ── Live Network Stream List ── -->
+      <div class="har-stream-container">
+        <div class="har-stream-list" id="har-stream-list">
+          <!-- Dynamically populated by har-panel.js -->
+        </div>
+      </div>
+
+      <!-- ── Request Detail Inspector Modal / Drawer ── -->
+      <div class="har-inspector-modal" id="har-inspector-modal" style="display: none;">
+        <div class="inspector-card">
+          <div class="inspector-header">
+            <span class="inspector-title">Detail Request &amp; Response</span>
+            <button class="inspector-close-btn" id="har-inspector-close" title="Tutup">✕</button>
+          </div>
+          <div class="inspector-body" id="har-inspector-body">
+            <!-- Dynamically populated by openInspector() -->
+          </div>
+        </div>
+      </div>
+
+    </div><!-- ── /#view-har ── -->
 
   </div>
 
   <script src="../src/generator.js"></script>
+  <script src="har-panel.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

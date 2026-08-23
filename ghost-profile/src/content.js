@@ -36,6 +36,18 @@
     } catch (_) {}
   });
 
+  // Listen for relay messages from window (inject.js HAR payloads)
+  window.addEventListener('message', (e) => {
+    if (e.source === window && e.data && e.data.type === '__GHOST_HAR_PAYLOAD_RELAY__') {
+      try {
+        chrome.runtime.sendMessage({
+          type: 'GHOST_HAR_RELAY_PAYLOAD',
+          payload: e.data.payload
+        }).catch(() => {});
+      } catch (_) {}
+    }
+  });
+
   // Listen for relay messages from popup/background
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === 'GHOST_UPDATE_PROFILE') {

@@ -2,5 +2,7 @@
 *.har
 token-personal.txt
 *.zip
+adobe-profile.json
 .DS_Store
 Thumbs.db
+
