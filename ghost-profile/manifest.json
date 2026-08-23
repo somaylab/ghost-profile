@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ghost Profile",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Stealth fingerprint spoofing — changes what you look like, not who you are",
   "permissions": [
     "storage",

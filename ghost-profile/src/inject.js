@@ -30,41 +30,34 @@
    * DEFAULT PROFILE (fallback if content.js doesn't provide one)
    * ────────────────────────────────────────────────────────────── */
   const DEFAULT_PROFILE = {
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.113 Safari/537.36',
-    appVersion: '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.113 Safari/537.36',
-    platform: 'Win32',
-    vendor: 'Google Inc.',
+    stealthMode: true,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    appVersion: typeof navigator !== 'undefined' ? navigator.appVersion : '',
+    platform: typeof navigator !== 'undefined' ? navigator.platform : 'Win32',
+    vendor: typeof navigator !== 'undefined' ? navigator.vendor : 'Google Inc.',
     oscpu: undefined,
     languages: ['en-US', 'en'],
     hardwareConcurrency: 8,
     deviceMemory: 8,
-    maxTouchPoints: 0,
+    maxTouchPoints: typeof navigator !== 'undefined' ? (navigator.maxTouchPoints || 0) : 0,
     doNotTrack: null,
-    chUA: '"Chromium";v="136", "Google Chrome";v="136", "Not.A/Brand";v="99"',
-    chUAMobile: '?0',
-    chUAPlatform: '"Windows"',
-    chUAPlatformVersion: '"10.0.0"',
-    chUAArch: '"x86"',
-    chUABitness: '"64"',
-    chUAFullVersionList: '"Chromium";v="136.0.7103.113", "Google Chrome";v="136.0.7103.113", "Not.A/Brand";v="99.0.0.0"',
-    chUAModel: '""',
-    uaDataBrands: [
-      { brand: 'Chromium', version: '136' },
-      { brand: 'Google Chrome', version: '136' },
-      { brand: 'Not.A/Brand', version: '99' }
-    ],
-    uaDataFullVersionList: [
-      { brand: 'Chromium', version: '136.0.7103.113' },
-      { brand: 'Google Chrome', version: '136.0.7103.113' },
-      { brand: 'Not.A/Brand', version: '99.0.0.0' }
-    ],
-    uaDataPlatform: 'Windows',
-    uaDataPlatformVersion: '10.0.0',
-    uaDataArchitecture: 'x86',
-    uaDataBitness: '64',
-    uaDataModel: '',
-    uaDataMobile: false,
-    uaDataWow64: false,
+    chUA: null,
+    chUAMobile: null,
+    chUAPlatform: null,
+    chUAPlatformVersion: null,
+    chUAArch: null,
+    chUABitness: null,
+    chUAFullVersionList: null,
+    chUAModel: null,
+    uaDataBrands: null,
+    uaDataFullVersionList: null,
+    uaDataPlatform: null,
+    uaDataPlatformVersion: null,
+    uaDataArchitecture: null,
+    uaDataBitness: null,
+    uaDataModel: null,
+    uaDataMobile: null,
+    uaDataWow64: null,
     screenWidth: 1920,
     screenHeight: 1080,
     availWidth: 1920,
@@ -88,34 +81,48 @@
     storageQuota: 250e9,
     storageUsage: 350e6,
     colorScheme: 'light',
-    label: 'Chrome 136 · Windows 10 · GTX 1650'
+    label: 'Ghost Profile Stealth'
   };
 
   /* ──────────────────────────────────────────────────────────────
    * STATE & CONFIGURATION
    * ────────────────────────────────────────────────────────────── */
   let P = { ...DEFAULT_PROFILE };
-  let STEALTH_MODE = false;
+  let STEALTH_MODE = true;
   let FEATURES = {
     ua: true, screen: true, canvas: true, webgl: true,
     audio: true, timezone: true, webrtc: true, fonts: true,
     mediaDevices: true, storage: true, matchMedia: true, misc: true
   };
 
-  // Read config from data attribute set by content.js
+  // Read initial config from data attribute if set synchronously
   try {
     const raw = document.documentElement.getAttribute('data-gp-cfg');
     if (raw) {
       const cfg = JSON.parse(raw);
-      // Full generated profile (from generator.js)
       if (cfg.fullProfile && typeof cfg.fullProfile === 'object') {
-        STEALTH_MODE = !!cfg.fullProfile.stealthMode;
+        STEALTH_MODE = cfg.fullProfile.stealthMode !== false;
         P = { ...DEFAULT_PROFILE, ...cfg.fullProfile };
       }
       if (cfg.features) Object.assign(FEATURES, cfg.features);
       document.documentElement.removeAttribute('data-gp-cfg');
     }
   } catch (_) {}
+
+  // Listen for dynamic profile updates from content.js
+  document.addEventListener('__GP_PROF_UPDATE__', function (e) {
+    try {
+      if (e && e.detail) {
+        if (e.detail.fullProfile) {
+          STEALTH_MODE = e.detail.fullProfile.stealthMode !== false;
+          Object.assign(P, e.detail.fullProfile);
+        }
+        if (e.detail.features) {
+          Object.assign(FEATURES, e.detail.features);
+        }
+      }
+    } catch (_) {}
+  }, true);
 
   /* ──────────────────────────────────────────────────────────────
    * UTILITY FUNCTIONS
@@ -164,69 +171,19 @@
    * 1. NAVIGATOR SPOOFING
    * ────────────────────────────────────────────────────────────── */
   if (FEATURES.ua) {
-    // In STEALTH MODE: only override hardware specs, NOT ua/platform/vendor
-    const navGetters = STEALTH_MODE ? {} : {
-      userAgent:           () => P.userAgent,
-      appVersion:          () => P.appVersion,
-      platform:            () => P.platform,
-      vendor:              () => P.vendor,
-      language:            () => P.languages[0],
-      languages:           () => Object.freeze([...P.languages]),
-    };
+    // Hardware specs & language spoofing (100% safe across all sites)
+    try { overrideGetter(Navigator.prototype, 'hardwareConcurrency', () => P.hardwareConcurrency || 8); } catch (_) {}
+    try { overrideGetter(Navigator.prototype, 'deviceMemory', () => P.deviceMemory || 8); } catch (_) {}
+    try { overrideGetter(Navigator.prototype, 'language', () => (P.languages && P.languages[0]) || 'en-US'); } catch (_) {}
+    try { overrideGetter(Navigator.prototype, 'languages', () => Object.freeze([...(P.languages || ['en-US', 'en'])])); } catch (_) {}
 
-    // Always override hardware specs (safe, not detectable by BFP)
-    const hwGetters = {
-      hardwareConcurrency: () => P.hardwareConcurrency,
-      deviceMemory:        () => P.deviceMemory,
-    };
-    if (!STEALTH_MODE) hwGetters.maxTouchPoints = () => P.maxTouchPoints;
-
-    const allNavGetters = { ...navGetters, ...hwGetters };
-    // In stealth mode, also add language spoofing
-    if (STEALTH_MODE) {
-      allNavGetters.language = () => P.languages[0];
-      allNavGetters.languages = () => Object.freeze([...P.languages]);
-    }
-    for (const [prop, getter] of Object.entries(allNavGetters)) {
-      try { overrideGetter(Navigator.prototype, prop, getter); } catch (_) {}
-    }
-
-    // navigator.userAgentData (Chrome Client Hints JS API)
-    // SKIP in stealth mode — let BFP see real userAgentData
-    if (!STEALTH_MODE && ('userAgentData' in navigator || 'NavigatorUAData' in window)) {
-      // Null-safety: if uaDataBrands is null/undefined, skip override entirely
-      if (!P.uaDataBrands || !Array.isArray(P.uaDataBrands)) {
-        // Don't override — let native userAgentData pass through
-      } else {
-        const makeUAData = () => {
-          const obj = {
-            brands: (P.uaDataBrands || []).map(b => Object.freeze({ ...b })),
-            mobile: P.uaDataMobile ?? false,
-            platform: P.uaDataPlatform || 'Windows',
-            getHighEntropyValues: maskFn(function (hints) {
-              const data = {
-                brands: (P.uaDataBrands || []).map(b => Object.freeze({ ...b })),
-                mobile: P.uaDataMobile ?? false,
-                platform: P.uaDataPlatform || 'Windows'
-              };
-              if (hints.includes('architecture'))     data.architecture = P.uaDataArchitecture || 'x86';
-              if (hints.includes('bitness'))           data.bitness = P.uaDataBitness || '64';
-              if (hints.includes('fullVersionList') && P.uaDataFullVersionList)
-                data.fullVersionList = P.uaDataFullVersionList.map(b => Object.freeze({ ...b }));
-              if (hints.includes('model'))             data.model = P.uaDataModel || '';
-              if (hints.includes('platformVersion'))   data.platformVersion = P.uaDataPlatformVersion || '10.0.0';
-              if (hints.includes('uaFullVersion'))     data.uaFullVersion = (P.uaDataFullVersionList || [])[0]?.version || '';
-              if (hints.includes('wow64'))             data.wow64 = P.uaDataWow64 ?? false;
-              return Promise.resolve(data);
-            }, 'function getHighEntropyValues() { [native code] }'),
-            toJSON: maskFn(function () {
-              return { brands: this.brands, mobile: this.mobile, platform: this.platform };
-            }, 'function toJSON() { [native code] }')
-          };
-          return obj;
-        };
-        try { overrideGetter(Navigator.prototype, 'userAgentData', makeUAData); } catch (_) {}
-      }
+    // In non-stealth custom mode only, override UA / platform / vendor
+    if (!STEALTH_MODE && P.userAgent) {
+      try { overrideGetter(Navigator.prototype, 'userAgent', () => P.userAgent); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'appVersion', () => P.appVersion || P.userAgent.replace('Mozilla/', '')); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'platform', () => P.platform || 'Win32'); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'vendor', () => P.vendor || 'Google Inc.'); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'maxTouchPoints', () => P.maxTouchPoints || 0); } catch (_) {}
     }
   }
 

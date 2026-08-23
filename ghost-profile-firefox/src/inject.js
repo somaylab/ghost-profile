@@ -1,41 +1,63 @@
 /**
- * Ghost Profile (Firefox) — inject.js
+ * Ghost Profile — inject.js
  * ═══════════════════════════════════════════════════════════════
- * Core fingerprint spoofing engine for Firefox Gecko runtime.
- * Runs at document_start in page execution context.
+ * Core fingerprint spoofing engine. Runs in MAIN world at
+ * document_start BEFORE any page scripts execute.
+ *
+ * Accepts a FULL profile object from content.js (via generator.js)
+ * or falls back to a built-in default profile.
  *
  * Spoofing coverage:
- *   1.  Navigator (UA, platform, oscpu, memory, cores, languages, vendor)
- *   2.  Screen & Display (resolution, colorDepth, DPR, outer*)
- *   3.  Canvas fingerprint (deterministic Mulberry32 pixel noise)
- *   4.  WebGL fingerprint (GPU vendor/renderer strings)
- *   5.  AudioContext fingerprint (sample-level noise)
- *   6.  Timezone (getTimezoneOffset, Intl.DateTimeFormat)
- *   7.  WebRTC leak protection (strip ICE servers)
- *   8.  Font enumeration noise (measureText perturbation)
- *   9.  Media devices (enumerateDevices spoofing)
- *  10.  Storage estimate (spoofed quota/usage)
- *  11.  CSS matchMedia (prefers-color-scheme consistency)
- *  12.  Misc (webdriver, connection, battery, plugins, etc.)
+ *   1.  Navigator (UA, platform, memory, cores, languages, etc.)
+ *   2.  Client Hints JS API (userAgentData + getHighEntropyValues)
+ *   3.  Screen & Display (resolution, colorDepth, DPR, outer*)
+ *   4.  Canvas fingerprint (deterministic pixel noise)
+ *   5.  WebGL fingerprint (GPU vendor/renderer strings)
+ *   6.  AudioContext fingerprint (sample-level noise)
+ *   7.  Timezone (getTimezoneOffset, Intl.DateTimeFormat)
+ *   8.  WebRTC leak protection (strip ICE servers)
+ *   9.  Font enumeration noise (measureText perturbation)
+ *  10.  Media devices (enumerateDevices spoofing)
+ *  11.  Storage estimate (spoofed quota/usage)
+ *  12.  CSS matchMedia (prefers-color-scheme consistency)
+ *  13.  Misc (webdriver, connection, battery, plugins, etc.)
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
   'use strict';
 
   /* ──────────────────────────────────────────────────────────────
-   * DEFAULT FIREFOX PROFILE
+   * DEFAULT PROFILE (fallback if content.js doesn't provide one)
    * ────────────────────────────────────────────────────────────── */
   const DEFAULT_PROFILE = {
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0',
-    appVersion: '5.0 (Windows)',
-    platform: 'Win32',
-    vendor: '',
-    oscpu: 'Windows NT 10.0; Win64; x64',
+    stealthMode: true,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+    appVersion: typeof navigator !== 'undefined' ? navigator.appVersion : '',
+    platform: typeof navigator !== 'undefined' ? navigator.platform : 'Win32',
+    vendor: typeof navigator !== 'undefined' ? navigator.vendor : 'Google Inc.',
+    oscpu: undefined,
     languages: ['en-US', 'en'],
     hardwareConcurrency: 8,
     deviceMemory: 8,
-    maxTouchPoints: 0,
+    maxTouchPoints: typeof navigator !== 'undefined' ? (navigator.maxTouchPoints || 0) : 0,
     doNotTrack: null,
+    chUA: null,
+    chUAMobile: null,
+    chUAPlatform: null,
+    chUAPlatformVersion: null,
+    chUAArch: null,
+    chUABitness: null,
+    chUAFullVersionList: null,
+    chUAModel: null,
+    uaDataBrands: null,
+    uaDataFullVersionList: null,
+    uaDataPlatform: null,
+    uaDataPlatformVersion: null,
+    uaDataArchitecture: null,
+    uaDataBitness: null,
+    uaDataModel: null,
+    uaDataMobile: null,
+    uaDataWow64: null,
     screenWidth: 1920,
     screenHeight: 1080,
     availWidth: 1920,
@@ -59,33 +81,48 @@
     storageQuota: 250e9,
     storageUsage: 350e6,
     colorScheme: 'light',
-    label: 'Firefox 135 · WIN11 · GTX 1650'
+    label: 'Ghost Profile Stealth'
   };
 
   /* ──────────────────────────────────────────────────────────────
    * STATE & CONFIGURATION
    * ────────────────────────────────────────────────────────────── */
   let P = { ...DEFAULT_PROFILE };
-  let STEALTH_MODE = false;
+  let STEALTH_MODE = true;
   let FEATURES = {
     ua: true, screen: true, canvas: true, webgl: true,
     audio: true, timezone: true, webrtc: true, fonts: true,
     mediaDevices: true, storage: true, matchMedia: true, misc: true
   };
 
-  // Read config from data attribute set by content.js
+  // Read initial config from data attribute if set synchronously
   try {
     const raw = document.documentElement.getAttribute('data-gp-cfg');
     if (raw) {
       const cfg = JSON.parse(raw);
       if (cfg.fullProfile && typeof cfg.fullProfile === 'object') {
-        STEALTH_MODE = !!cfg.fullProfile.stealthMode;
+        STEALTH_MODE = cfg.fullProfile.stealthMode !== false;
         P = { ...DEFAULT_PROFILE, ...cfg.fullProfile };
       }
       if (cfg.features) Object.assign(FEATURES, cfg.features);
       document.documentElement.removeAttribute('data-gp-cfg');
     }
   } catch (_) {}
+
+  // Listen for dynamic profile updates from content.js
+  document.addEventListener('__GP_PROF_UPDATE__', function (e) {
+    try {
+      if (e && e.detail) {
+        if (e.detail.fullProfile) {
+          STEALTH_MODE = e.detail.fullProfile.stealthMode !== false;
+          Object.assign(P, e.detail.fullProfile);
+        }
+        if (e.detail.features) {
+          Object.assign(FEATURES, e.detail.features);
+        }
+      }
+    } catch (_) {}
+  }, true);
 
   /* ──────────────────────────────────────────────────────────────
    * UTILITY FUNCTIONS
@@ -107,109 +144,112 @@
   const _nativeFns = new WeakMap();
   const _origToString = Function.prototype.toString;
 
-  try {
-    Object.defineProperty(Function.prototype, 'toString', {
-      value: function () {
-        return _nativeFns.get(this) || _origToString.call(this);
-      },
-      writable: true,
-      configurable: true
-    });
-    _nativeFns.set(Function.prototype.toString, 'function toString() { [native code] }');
-  } catch (_) {}
+  Object.defineProperty(Function.prototype, 'toString', {
+    value: function () {
+      return _nativeFns.get(this) || _origToString.call(this);
+    },
+    writable: true,
+    configurable: true
+  });
+  _nativeFns.set(Function.prototype.toString, 'function toString() { [native code] }');
 
   function maskFn(fn, sig) {
     _nativeFns.set(fn, sig);
-    try {
-      Object.defineProperty(fn, 'name', { value: (sig.match(/function\s*([^(]*)/) || [])[1] || '' });
-    } catch (_) {}
     return fn;
   }
 
-  function overrideGetter(proto, prop, fn) {
+  /** Override a getter on a prototype, masked as native */
+  function overrideGetter(proto, prop, getter) {
+    const masked = maskFn(getter, `function get ${prop}() { [native code] }`);
+    Object.defineProperty(proto, prop, {
+      get: masked, set: undefined,
+      configurable: true, enumerable: true
+    });
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+   * 1. NAVIGATOR SPOOFING
+   * ────────────────────────────────────────────────────────────── */
+  if (FEATURES.ua) {
+    // Hardware specs & language spoofing (100% safe across all sites)
+    try { overrideGetter(Navigator.prototype, 'hardwareConcurrency', () => P.hardwareConcurrency || 8); } catch (_) {}
+    try { overrideGetter(Navigator.prototype, 'deviceMemory', () => P.deviceMemory || 8); } catch (_) {}
+    try { overrideGetter(Navigator.prototype, 'language', () => (P.languages && P.languages[0]) || 'en-US'); } catch (_) {}
+    try { overrideGetter(Navigator.prototype, 'languages', () => Object.freeze([...(P.languages || ['en-US', 'en'])])); } catch (_) {}
+
+    // In non-stealth custom mode only, override UA / platform / vendor
+    if (!STEALTH_MODE && P.userAgent) {
+      try { overrideGetter(Navigator.prototype, 'userAgent', () => P.userAgent); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'appVersion', () => P.appVersion || P.userAgent.replace('Mozilla/', '')); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'platform', () => P.platform || 'Win32'); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'vendor', () => P.vendor || 'Google Inc.'); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'maxTouchPoints', () => P.maxTouchPoints || 0); } catch (_) {}
+    }
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+   * 2. SCREEN & DISPLAY SPOOFING
+   * ────────────────────────────────────────────────────────────── */
+  if (FEATURES.screen) {
+    const screenGetters = {
+      width:      () => P.screenWidth,
+      height:     () => P.screenHeight,
+      availWidth: () => P.availWidth,
+      availHeight:() => P.availHeight,
+      colorDepth: () => P.colorDepth,
+      pixelDepth: () => P.pixelDepth
+    };
+    for (const [prop, getter] of Object.entries(screenGetters)) {
+      try { overrideGetter(Screen.prototype, prop, getter); } catch (_) {}
+    }
+
+    // devicePixelRatio
     try {
-      const desc = Object.getOwnPropertyDescriptor(proto, prop);
-      const originalGetter = desc ? desc.get : null;
-      Object.defineProperty(proto, prop, {
-        get: maskFn(function () {
-          return fn.call(this, originalGetter);
-        }, `function get ${prop}() { [native code] }`),
-        set: desc ? desc.set : undefined,
-        configurable: true,
-        enumerable: true
+      Object.defineProperty(window, 'devicePixelRatio', {
+        get: maskFn(() => P.devicePixelRatio, 'function get devicePixelRatio() { [native code] }'),
+        configurable: true, enumerable: true
       });
+    } catch (_) {}
+
+    // outerWidth / outerHeight
+    try {
+      Object.defineProperty(window, 'outerWidth', {
+        get: maskFn(() => P.outerWidth, 'function get outerWidth() { [native code] }'),
+        configurable: true, enumerable: true
+      });
+      Object.defineProperty(window, 'outerHeight', {
+        get: maskFn(() => P.outerHeight, 'function get outerHeight() { [native code] }'),
+        configurable: true, enumerable: true
+      });
+    } catch (_) {}
+
+    // screenX / screenY — report 0 (single monitor)
+    try {
+      Object.defineProperty(window, 'screenX', {
+        get: maskFn(() => 0, 'function get screenX() { [native code] }'),
+        configurable: true, enumerable: true
+      });
+      Object.defineProperty(window, 'screenY', {
+        get: maskFn(() => 0, 'function get screenY() { [native code] }'),
+        configurable: true, enumerable: true
+      });
+    } catch (_) {}
+
+    // screen.orientation
+    try {
+      const orientType = P.screenWidth >= P.screenHeight ? 'landscape-primary' : 'portrait-primary';
+      const orientAngle = P.screenWidth >= P.screenHeight ? 0 : 90;
+      if (screen.orientation) {
+        overrideGetter(screen.orientation.__proto__, 'type', () => orientType);
+        overrideGetter(screen.orientation.__proto__, 'angle', () => orientAngle);
+      }
     } catch (_) {}
   }
 
   /* ──────────────────────────────────────────────────────────────
-   * 1. NAVIGATOR OVERRIDES (Firefox Compliant)
+   * 3. CANVAS FINGERPRINT PROTECTION
    * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.ua) {
-    // In stealth mode: userAgent stays real, hardware/languages are spoofed
-    if (!STEALTH_MODE && P.userAgent) {
-      overrideGetter(Navigator.prototype, 'userAgent', () => P.userAgent);
-      overrideGetter(Navigator.prototype, 'appVersion', () => P.appVersion || P.userAgent.replace('Mozilla/', ''));
-    }
-
-    if (P.platform) {
-      overrideGetter(Navigator.prototype, 'platform', () => P.platform);
-    }
-
-    // Firefox vendor is empty string ""
-    overrideGetter(Navigator.prototype, 'vendor', () => P.vendor !== undefined ? P.vendor : '');
-
-    // Firefox oscpu property
-    if (P.oscpu !== undefined) {
-      overrideGetter(Navigator.prototype, 'oscpu', () => P.oscpu);
-    }
-
-    if (P.hardwareConcurrency) {
-      overrideGetter(Navigator.prototype, 'hardwareConcurrency', () => P.hardwareConcurrency);
-    }
-
-    if (P.deviceMemory) {
-      overrideGetter(Navigator.prototype, 'deviceMemory', () => P.deviceMemory);
-    }
-
-    if (P.maxTouchPoints !== undefined) {
-      overrideGetter(Navigator.prototype, 'maxTouchPoints', () => P.maxTouchPoints);
-    }
-
-    if (P.languages && P.languages.length > 0) {
-      overrideGetter(Navigator.prototype, 'language', () => P.languages[0]);
-      overrideGetter(Navigator.prototype, 'languages', () => Object.freeze([...P.languages]));
-    }
-
-    if (P.doNotTrack !== undefined) {
-      overrideGetter(Navigator.prototype, 'doNotTrack', () => P.doNotTrack);
-    }
-  }
-
-  /* ──────────────────────────────────────────────────────────────
-   * 2. SCREEN & DISPLAY OVERRIDES
-   * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.screen) {
-    if (P.screenWidth) {
-      overrideGetter(Screen.prototype, 'width', () => P.screenWidth);
-      overrideGetter(Screen.prototype, 'availWidth', () => P.availWidth || P.screenWidth);
-    }
-    if (P.screenHeight) {
-      overrideGetter(Screen.prototype, 'height', () => P.screenHeight);
-      overrideGetter(Screen.prototype, 'availHeight', () => P.availHeight || P.screenHeight - 40);
-    }
-    if (P.colorDepth) {
-      overrideGetter(Screen.prototype, 'colorDepth', () => P.colorDepth);
-      overrideGetter(Screen.prototype, 'pixelDepth', () => P.pixelDepth || P.colorDepth);
-    }
-    if (P.devicePixelRatio) {
-      overrideGetter(window, 'devicePixelRatio', () => P.devicePixelRatio);
-    }
-  }
-
-  /* ──────────────────────────────────────────────────────────────
-   * 3. CANVAS FINGERPRINT PROTECTION (Mulberry32 PRNG Noise)
-   * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.canvas && P.canvasNoiseSeed !== undefined) {
+  if (FEATURES.canvas) {
     const _origToDataURL = HTMLCanvasElement.prototype.toDataURL;
     const _origToBlob = HTMLCanvasElement.prototype.toBlob;
     const _origGetImageData = CanvasRenderingContext2D.prototype.getImageData;
@@ -267,7 +307,7 @@
   /* ──────────────────────────────────────────────────────────────
    * 4. WEBGL FINGERPRINT PROTECTION
    * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.webgl && (P.webglVendor || P.webglRenderer)) {
+  if (FEATURES.webgl) {
     const UNMASKED_VENDOR = 0x9245;
     const UNMASKED_RENDERER = 0x9246;
 
@@ -276,8 +316,8 @@
       const _origGetExt = proto.getExtension;
 
       proto.getParameter = maskFn(function (param) {
-        if (param === UNMASKED_VENDOR && P.webglVendor) return P.webglVendor;
-        if (param === UNMASKED_RENDERER && P.webglRenderer) return P.webglRenderer;
+        if (param === UNMASKED_VENDOR) return P.webglVendor;
+        if (param === UNMASKED_RENDERER) return P.webglRenderer;
         return _origGetParam.call(this, param);
       }, 'function getParameter() { [native code] }');
 
@@ -297,20 +337,32 @@
   /* ──────────────────────────────────────────────────────────────
    * 5. AUDIO FINGERPRINT PROTECTION
    * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.audio && P.audioNoiseSeed !== undefined) {
-    if (typeof AudioBuffer !== 'undefined') {
-      const _origGetChannelData = AudioBuffer.prototype.getChannelData;
-      AudioBuffer.prototype.getChannelData = maskFn(function (channel) {
-        const data = _origGetChannelData.call(this, channel);
-        if (data.length < 100000) {
-          const rng = mulberry32(P.audioNoiseSeed * 1e6);
-          const step = Math.max(1, Math.floor(data.length / 200));
-          for (let i = 0; i < data.length; i += step) {
-            data[i] += (rng() - 0.5) * 1e-7;
+  if (FEATURES.audio) {
+    const _origGetChannelData = AudioBuffer.prototype.getChannelData;
+    AudioBuffer.prototype.getChannelData = maskFn(function (channel) {
+      const data = _origGetChannelData.call(this, channel);
+      if (data.length < 100000) {
+        const rng = mulberry32(P.audioNoiseSeed * 1e6);
+        const step = Math.max(1, Math.floor(data.length / 200));
+        for (let i = 0; i < data.length; i += step) {
+          data[i] += (rng() - 0.5) * 1e-7;
+        }
+      }
+      return data;
+    }, 'function getChannelData() { [native code] }');
+
+    if (AudioBuffer.prototype.copyFromChannel) {
+      const _origCopyFrom = AudioBuffer.prototype.copyFromChannel;
+      AudioBuffer.prototype.copyFromChannel = maskFn(function (dest, ch, start) {
+        _origCopyFrom.call(this, dest, ch, start);
+        if (dest.length < 100000) {
+          const rng = mulberry32(P.audioNoiseSeed * 1e6 + 7);
+          const step = Math.max(1, Math.floor(dest.length / 200));
+          for (let i = 0; i < dest.length; i += step) {
+            dest[i] += (rng() - 0.5) * 1e-7;
           }
         }
-        return data;
-      }, 'function getChannelData() { [native code] }');
+      }, 'function copyFromChannel() { [native code] }');
     }
 
     if (typeof AnalyserNode !== 'undefined') {
@@ -333,160 +385,438 @@
           }
         }, 'function getByteFrequencyData() { [native code] }');
       }
+
+      const _origGetFloatTime = AnalyserNode.prototype.getFloatTimeDomainData;
+      if (_origGetFloatTime) {
+        AnalyserNode.prototype.getFloatTimeDomainData = maskFn(function (arr) {
+          _origGetFloatTime.call(this, arr);
+          const rng = mulberry32(P.audioNoiseSeed * 1e6 + 23);
+          for (let i = 0; i < arr.length; i += 8) arr[i] += (rng() - 0.5) * 1e-7;
+        }, 'function getFloatTimeDomainData() { [native code] }');
+      }
     }
+
+    // Also noise OscillatorNode → AnalyserNode pipeline by wrapping createAnalyser
+    try {
+      const _origCreateOscillator = AudioContext.prototype.createOscillator;
+      const _origCreateOscillatorOA = (typeof OfflineAudioContext !== 'undefined') ?
+        OfflineAudioContext.prototype.createOscillator : null;
+
+      const wrapCreateOsc = function (orig) {
+        return maskFn(function (...args) {
+          const osc = orig.apply(this, args);
+          // Slightly detune oscillator frequency to alter fingerprint
+          const origFreq = osc.frequency.value;
+          const rng = mulberry32(P.audioNoiseSeed * 1e6 + 37);
+          osc.frequency.value = origFreq + (rng() - 0.5) * 0.001;
+          return osc;
+        }, 'function createOscillator() { [native code] }');
+      };
+
+      AudioContext.prototype.createOscillator = wrapCreateOsc(_origCreateOscillator);
+      if (_origCreateOscillatorOA) {
+        OfflineAudioContext.prototype.createOscillator = wrapCreateOsc(_origCreateOscillatorOA);
+      }
+    } catch (_) {}
   }
 
   /* ──────────────────────────────────────────────────────────────
-   * 6. TIMEZONE PROTECTION
+   * 6. TIMEZONE SPOOFING
    * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.timezone && P.timezoneOffset !== undefined) {
+  if (FEATURES.timezone) {
     Date.prototype.getTimezoneOffset = maskFn(function () {
       return P.timezoneOffset;
     }, 'function getTimezoneOffset() { [native code] }');
 
-    const _origDateTimeFormat = Intl.DateTimeFormat;
     const _origResolvedOptions = Intl.DateTimeFormat.prototype.resolvedOptions;
-
     Intl.DateTimeFormat.prototype.resolvedOptions = maskFn(function () {
-      const options = _origResolvedOptions.call(this);
-      if (P.timezone) options.timeZone = P.timezone;
-      return options;
+      const result = _origResolvedOptions.call(this);
+      result.timeZone = P.timezone;
+      return result;
     }, 'function resolvedOptions() { [native code] }');
 
-    // Spoof Intl.DateTimeFormat constructor call without timezone specified
-    const SpoofedDateTimeFormat = maskFn(function (locales, options = {}) {
-      if (!options.timeZone && P.timezone) {
-        options = { ...options, timeZone: P.timezone };
+    // Patch Intl.DateTimeFormat constructor to force spoofed timezone
+    const _OrigDTF = Intl.DateTimeFormat;
+    Intl.DateTimeFormat = maskFn(function (...args) {
+      if (args[1] && typeof args[1] === 'object' && !args[1].timeZone) {
+        args[1] = { ...args[1], timeZone: P.timezone };
+      } else if (!args[1]) {
+        args[1] = { timeZone: P.timezone };
       }
-      return new _origDateTimeFormat(locales, options);
+      return new _OrigDTF(...args);
     }, 'function DateTimeFormat() { [native code] }');
+    Intl.DateTimeFormat.prototype = _OrigDTF.prototype;
+    Object.setPrototypeOf(Intl.DateTimeFormat, _OrigDTF);
+    Intl.DateTimeFormat.supportedLocalesOf = _OrigDTF.supportedLocalesOf;
 
-    SpoofedDateTimeFormat.prototype = _origDateTimeFormat.prototype;
-    SpoofedDateTimeFormat.supportedLocalesOf = _origDateTimeFormat.supportedLocalesOf;
-    try { Intl.DateTimeFormat = SpoofedDateTimeFormat; } catch (_) {}
+    // Patch Date.prototype.toString to reflect spoofed timezone
+    const _origDateToString = Date.prototype.toString;
+    Date.prototype.toString = maskFn(function () {
+      try {
+        const fmt = new _OrigDTF('en-US', {
+          timeZone: P.timezone, weekday: 'short', year: 'numeric',
+          month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit',
+          second: '2-digit', hour12: false, timeZoneName: 'longOffset'
+        });
+        const parts = fmt.formatToParts(this);
+        const get = (t) => (parts.find(p => p.type === t) || {}).value || '';
+        const offset = P.timezoneOffset;
+        const sign = offset <= 0 ? '+' : '-';
+        const abs = Math.abs(offset);
+        const oh = String(Math.floor(abs / 60)).padStart(2, '0');
+        const om = String(abs % 60).padStart(2, '0');
+        const tzAbbr = P.timezone.split('/').pop().replace(/_/g, ' ');
+        return `${get('weekday')} ${get('month')} ${get('day')} ${get('year')} ${get('hour')}:${get('minute')}:${get('second')} GMT${sign}${oh}${om} (${tzAbbr})`;
+      } catch (_) { return _origDateToString.call(this); }
+    }, 'function toString() { [native code] }');
+
+    const _origDateToTimeString = Date.prototype.toTimeString;
+    Date.prototype.toTimeString = maskFn(function () {
+      try {
+        const fmt = new _OrigDTF('en-US', {
+          timeZone: P.timezone, hour: '2-digit', minute: '2-digit',
+          second: '2-digit', hour12: false
+        });
+        const time = fmt.format(this);
+        const offset = P.timezoneOffset;
+        const sign = offset <= 0 ? '+' : '-';
+        const abs = Math.abs(offset);
+        const oh = String(Math.floor(abs / 60)).padStart(2, '0');
+        const om = String(abs % 60).padStart(2, '0');
+        const tzAbbr = P.timezone.split('/').pop().replace(/_/g, ' ');
+        return `${time} GMT${sign}${oh}${om} (${tzAbbr})`;
+      } catch (_) { return _origDateToTimeString.call(this); }
+    }, 'function toTimeString() { [native code] }');
   }
 
   /* ──────────────────────────────────────────────────────────────
-   * 7. FONT ENUMERATION NOISE
+   * 7. WEBRTC LEAK PROTECTION
    * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.fonts && P.fontNoiseSeed !== undefined) {
-    const _origMeasureText = CanvasRenderingContext2D.prototype.measureText;
-    const fontRng = mulberry32(P.fontNoiseSeed * 1e6);
+  if (FEATURES.webrtc) {
+    if (typeof RTCPeerConnection !== 'undefined') {
+      const _OrigRTC = RTCPeerConnection;
+      window.RTCPeerConnection = maskFn(function (...args) {
+        if (args[0]) args[0] = { ...args[0], iceServers: [] };
+        return new _OrigRTC(...args);
+      }, 'function RTCPeerConnection() { [native code] }');
+      window.RTCPeerConnection.prototype = _OrigRTC.prototype;
+      Object.setPrototypeOf(window.RTCPeerConnection, _OrigRTC);
+      for (const key of Object.getOwnPropertyNames(_OrigRTC)) {
+        if (!(key in window.RTCPeerConnection)) {
+          try {
+            Object.defineProperty(window.RTCPeerConnection, key,
+              Object.getOwnPropertyDescriptor(_OrigRTC, key));
+          } catch (_) {}
+        }
+      }
+    }
+    if (typeof webkitRTCPeerConnection !== 'undefined') {
+      window.webkitRTCPeerConnection = window.RTCPeerConnection;
+    }
+  }
 
+  /* ──────────────────────────────────────────────────────────────
+   * 8. FONT ENUMERATION NOISE
+   * ────────────────────────────────────────────────────────────── */
+  if (FEATURES.fonts) {
+    // measureText is used by font fingerprinters to detect installed fonts
+    // by measuring glyph widths. We add tiny deterministic noise.
+    const _origMeasureText = CanvasRenderingContext2D.prototype.measureText;
+    const fontRng = mulberry32((P.fontNoiseSeed || 0.5) * 1e6);
+
+    // Wrap measureText without Proxy (Proxy is detectable via Object.getPrototypeOf)
+    // Instead, create a real TextMetrics-like object with noised values
     CanvasRenderingContext2D.prototype.measureText = maskFn(function (text) {
       const metrics = _origMeasureText.call(this, text);
-      const fake = Object.create(TextMetrics.prototype);
+      const noise = (fontRng() - 0.5) * 0.2; // ±0.1px
 
-      const props = [
-        'width', 'actualBoundingBoxLeft', 'actualBoundingBoxRight',
+      // Read all numeric properties and create a native-like wrapper
+      const desc = {};
+      const numericProps = ['width', 'actualBoundingBoxLeft', 'actualBoundingBoxRight',
         'fontBoundingBoxAscent', 'fontBoundingBoxDescent',
         'actualBoundingBoxAscent', 'actualBoundingBoxDescent',
-        'emHeightAscent', 'emHeightDescent'
-      ];
-
-      for (const prop of props) {
-        if (prop in metrics) {
+        'emHeightAscent', 'emHeightDescent',
+        'hangingBaseline', 'alphabeticBaseline', 'ideographicBaseline'];
+      for (const prop of numericProps) {
+        try {
           const val = metrics[prop];
-          const delta = prop === 'width' ? (fontRng() - 0.5) * 0.02 : 0;
-          Object.defineProperty(fake, prop, {
-            value: typeof val === 'number' ? val + delta : val,
-            enumerable: true
+          if (typeof val === 'number') {
+            desc[prop] = { value: val + noise, enumerable: true, configurable: true };
+          }
+        } catch (_) {}
+      }
+      const faked = Object.create(TextMetrics.prototype);
+      Object.defineProperties(faked, desc);
+      return faked;
+    }, 'function measureText() { [native code] }');
+
+    // Also add noise to OffscreenCanvas measureText if available
+    try {
+      if (typeof OffscreenCanvasRenderingContext2D !== 'undefined') {
+        const _origOffMeasure = OffscreenCanvasRenderingContext2D.prototype.measureText;
+        const fontRng2 = mulberry32((P.fontNoiseSeed || 0.5) * 1e6 + 3);
+        OffscreenCanvasRenderingContext2D.prototype.measureText = maskFn(function (text) {
+          const metrics = _origOffMeasure.call(this, text);
+          const noise = (fontRng2() - 0.5) * 0.2;
+          const desc = {};
+          const numericProps = ['width', 'actualBoundingBoxLeft', 'actualBoundingBoxRight',
+            'fontBoundingBoxAscent', 'fontBoundingBoxDescent',
+            'actualBoundingBoxAscent', 'actualBoundingBoxDescent'];
+          for (const prop of numericProps) {
+            try {
+              const val = metrics[prop];
+              if (typeof val === 'number') {
+                desc[prop] = { value: val + noise, enumerable: true, configurable: true };
+              }
+            } catch (_) {}
+          }
+          const faked = Object.create(TextMetrics.prototype);
+          Object.defineProperties(faked, desc);
+          return faked;
+        }, 'function measureText() { [native code] }');
+      }
+    } catch (_) {}
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+   * 9. MEDIA DEVICES SPOOFING
+   * ────────────────────────────────────────────────────────────── */
+  if (FEATURES.mediaDevices && P.mediaDevices) {
+    try {
+      const _origEnumerate = navigator.mediaDevices.enumerateDevices;
+      navigator.mediaDevices.enumerateDevices = maskFn(function () {
+        // Return spoofed device list instead of real one
+        const devices = P.mediaDevices.map(d => {
+          const dev = {};
+          Object.defineProperties(dev, {
+            deviceId: { value: d.deviceId, enumerable: true },
+            kind:     { value: d.kind, enumerable: true },
+            label:    { value: d.label || '', enumerable: true },
+            groupId:  { value: d.groupId, enumerable: true },
+            toJSON:   { value: function () { return { deviceId: this.deviceId, kind: this.kind, label: this.label, groupId: this.groupId }; } }
+          });
+          Object.setPrototypeOf(dev, MediaDeviceInfo.prototype);
+          return dev;
+        });
+        return Promise.resolve(devices);
+      }, 'function enumerateDevices() { [native code] }');
+    } catch (_) {}
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+   * 10. STORAGE ESTIMATE SPOOFING
+   * ────────────────────────────────────────────────────────────── */
+  if (FEATURES.storage) {
+    try {
+      if (navigator.storage && navigator.storage.estimate) {
+        const _origEstimate = navigator.storage.estimate.bind(navigator.storage);
+        navigator.storage.estimate = maskFn(function () {
+          return Promise.resolve({
+            quota: P.storageQuota || 250e9,
+            usage: P.storageUsage || 350e6
+          });
+        }, 'function estimate() { [native code] }');
+      }
+    } catch (_) {}
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+   * 11. MATCHMEDIA CONSISTENCY
+   * ────────────────────────────────────────────────────────────── */
+  if (FEATURES.matchMedia) {
+    try {
+      const _origMatchMedia = window.matchMedia;
+      window.matchMedia = maskFn(function (query) {
+        // Intercept prefers-color-scheme to return consistent result
+        if (query && query.includes('prefers-color-scheme')) {
+          const scheme = P.colorScheme || 'light';
+          const wantsDark = query.includes('dark');
+          const wantsLight = query.includes('light');
+          const matches = (wantsDark && scheme === 'dark') || (wantsLight && scheme === 'light');
+          const result = _origMatchMedia.call(window, query);
+          return new Proxy(result, {
+            get(target, prop) {
+              if (prop === 'matches') return matches;
+              const val = target[prop];
+              return typeof val === 'function' ? val.bind(target) : val;
+            }
           });
         }
-      }
-
-      return fake;
-    }, 'function measureText() { [native code] }');
-  }
-
-  /* ──────────────────────────────────────────────────────────────
-   * 8. WEBRTC LEAK PROTECTION
-   * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.webrtc && typeof RTCPeerConnection !== 'undefined') {
-    const _origRTCPC = RTCPeerConnection;
-    const SpoofedRTCPC = maskFn(function (config, ...rest) {
-      if (config && config.iceServers) {
-        config = { ...config, iceServers: [] };
-      }
-      return new _origRTCPC(config, ...rest);
-    }, 'function RTCPeerConnection() { [native code] }');
-
-    SpoofedRTCPC.prototype = _origRTCPC.prototype;
-    SpoofedRTCPC.generateCertificate = _origRTCPC.generateCertificate;
-    try { window.RTCPeerConnection = SpoofedRTCPC; } catch (_) {}
-  }
-
-  /* ──────────────────────────────────────────────────────────────
-   * 9. MEDIA DEVICES PROTECTION
-   * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.mediaDevices && P.mediaDevices && navigator.mediaDevices) {
-    navigator.mediaDevices.enumerateDevices = maskFn(async function () {
-      return P.mediaDevices.map(d => ({
-        deviceId: d.deviceId,
-        kind: d.kind,
-        label: d.label || '',
-        groupId: d.groupId || '',
-        toJSON() {
-          return { deviceId: this.deviceId, kind: this.kind, label: this.label, groupId: this.groupId };
+        // Intercept prefers-reduced-motion — always no-preference
+        if (query && query.includes('prefers-reduced-motion')) {
+          const result = _origMatchMedia.call(window, query);
+          return new Proxy(result, {
+            get(target, prop) {
+              if (prop === 'matches') return query.includes('no-preference');
+              const val = target[prop];
+              return typeof val === 'function' ? val.bind(target) : val;
+            }
+          });
         }
-      }));
-    }, 'function enumerateDevices() { [native code] }');
+        // Intercept screen resolution queries to match spoofed values
+        if (query && (query.includes('device-width') || query.includes('device-height'))) {
+          const result = _origMatchMedia.call(window, query);
+          // Let these pass through since the screen properties are already spoofed
+          return result;
+        }
+        return _origMatchMedia.call(window, query);
+      }, 'function matchMedia() { [native code] }');
+    } catch (_) {}
   }
 
   /* ──────────────────────────────────────────────────────────────
-   * 10. STORAGE ESTIMATE PROTECTION
-   * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.storage && navigator.storage && navigator.storage.estimate) {
-    navigator.storage.estimate = maskFn(async function () {
-      return {
-        quota: P.storageQuota || 250e9,
-        usage: P.storageUsage || 350e6,
-        usageDetails: {}
-      };
-    }, 'function estimate() { [native code] }');
-  }
-
-  /* ──────────────────────────────────────────────────────────────
-   * 11. CSS MATCHMEDIA (Dark/Light Consistency)
-   * ────────────────────────────────────────────────────────────── */
-  if (FEATURES.matchMedia && P.colorScheme && window.matchMedia) {
-    const _origMatchMedia = window.matchMedia;
-    window.matchMedia = maskFn(function (query) {
-      const res = _origMatchMedia.call(this, query);
-      if (query.includes('prefers-color-scheme')) {
-        const matches = query.includes(P.colorScheme);
-        return {
-          matches,
-          media: query,
-          onchange: res.onchange,
-          addListener: res.addListener ? res.addListener.bind(res) : () => {},
-          removeListener: res.removeListener ? res.removeListener.bind(res) : () => {},
-          addEventListener: res.addEventListener ? res.addEventListener.bind(res) : () => {},
-          removeEventListener: res.removeEventListener ? res.removeEventListener.bind(res) : () => {},
-          dispatchEvent: res.dispatchEvent ? res.dispatchEvent.bind(res) : () => true
-        };
-      }
-      return res;
-    }, 'function matchMedia() { [native code] }');
-  }
-
-  /* ──────────────────────────────────────────────────────────────
-   * 12. MISC PROTECTIONS
+   * 12. MISCELLANEOUS PROTECTIONS
    * ────────────────────────────────────────────────────────────── */
   if (FEATURES.misc) {
-    // navigator.webdriver — false
-    overrideGetter(Navigator.prototype, 'webdriver', () => false);
+    // navigator.webdriver — always false
+    try { overrideGetter(Navigator.prototype, 'webdriver', () => false); } catch (_) {}
 
-    // navigator.plugins — clean standard array
-    if (Navigator.prototype.plugins) {
-      overrideGetter(Navigator.prototype, 'plugins', () => {
-        const arr = [];
-        arr.item = (i) => arr[i] || null;
-        arr.namedItem = (n) => arr.find(p => p.name === n) || null;
-        arr.refresh = () => {};
-        return arr;
+    // navigator.doNotTrack
+    try {
+      const dnt = P.doNotTrack;
+      overrideGetter(Navigator.prototype, 'doNotTrack', () => dnt);
+    } catch (_) {}
+
+    // navigator.connection — consistent
+    try {
+      const connData = Object.freeze({
+        effectiveType: '4g',
+        rtt: 50,
+        downlink: 10,
+        saveData: false,
+        type: 'wifi',
+        onchange: null,
+        addEventListener: maskFn(function () {}, 'function addEventListener() { [native code] }'),
+        removeEventListener: maskFn(function () {}, 'function removeEventListener() { [native code] }'),
+        dispatchEvent: maskFn(function () { return true; }, 'function dispatchEvent() { [native code] }')
       });
-    }
+      overrideGetter(Navigator.prototype, 'connection', () => connData);
+    } catch (_) {}
+
+    // navigator.getBattery — generic full battery
+    try {
+      Navigator.prototype.getBattery = maskFn(function () {
+        return Promise.resolve(Object.freeze({
+          charging: true, chargingTime: 0,
+          dischargingTime: Infinity, level: 1.0,
+          onchargingchange: null, onchargingtimechange: null,
+          ondischargingtimechange: null, onlevelchange: null,
+          addEventListener: function () {},
+          removeEventListener: function () {},
+          dispatchEvent: function () { return true; }
+        }));
+      }, 'function getBattery() { [native code] }');
+    } catch (_) {}
+
+    // navigator.plugins — consistent (Chrome reports 5 default plugins)
+    try {
+      const makePlugin = (name, desc, filename) => {
+        const p = Object.create(Plugin.prototype);
+        Object.defineProperties(p, {
+          name: { value: name, enumerable: true },
+          description: { value: desc, enumerable: true },
+          filename: { value: filename, enumerable: true },
+          length: { value: 0, enumerable: true }
+        });
+        return p;
+      };
+      const pluginsList = [
+        makePlugin('PDF Viewer', 'Portable Document Format', 'internal-pdf-viewer'),
+        makePlugin('Chrome PDF Viewer', 'Portable Document Format', 'internal-pdf-viewer'),
+        makePlugin('Chromium PDF Viewer', 'Portable Document Format', 'internal-pdf-viewer'),
+        makePlugin('Microsoft Edge PDF Viewer', 'Portable Document Format', 'internal-pdf-viewer'),
+        makePlugin('WebKit built-in PDF', 'Portable Document Format', 'internal-pdf-viewer')
+      ];
+      overrideGetter(Navigator.prototype, 'plugins', () => {
+        const list = Object.create(PluginArray.prototype);
+        pluginsList.forEach((p, i) => {
+          Object.defineProperty(list, i, { value: p, enumerable: true });
+        });
+        Object.defineProperty(list, 'length', { value: pluginsList.length, enumerable: true });
+        list.item = maskFn(function(i) { return pluginsList[i] || null; }, 'function item() { [native code] }');
+        list.namedItem = maskFn(function(n) { return pluginsList.find(p => p.name === n) || null; }, 'function namedItem() { [native code] }');
+        list.refresh = maskFn(function() {}, 'function refresh() { [native code] }');
+        return list;
+      });
+    } catch (_) {}
+
+    // navigator.mimeTypes — consistent
+    try {
+      overrideGetter(Navigator.prototype, 'mimeTypes', () => {
+        const list = Object.create(MimeTypeArray.prototype);
+        Object.defineProperty(list, 'length', { value: 2, enumerable: true });
+        const makeMime = (type, desc, suffix) => {
+          const m = Object.create(MimeType.prototype);
+          Object.defineProperties(m, {
+            type: { value: type, enumerable: true },
+            description: { value: desc, enumerable: true },
+            suffixes: { value: suffix, enumerable: true }
+          });
+          return m;
+        };
+        const mimes = [
+          makeMime('application/pdf', 'Portable Document Format', 'pdf'),
+          makeMime('text/pdf', 'Portable Document Format', 'pdf')
+        ];
+        mimes.forEach((m, i) => Object.defineProperty(list, i, { value: m, enumerable: true }));
+        list.item = maskFn(function(i) { return mimes[i] || null; }, 'function item() { [native code] }');
+        list.namedItem = maskFn(function(n) { return mimes.find(m => m.type === n) || null; }, 'function namedItem() { [native code] }');
+        return list;
+      });
+    } catch (_) {}
+
+    // navigator.permissions.query — consistent for notifications
+    try {
+      const _origQuery = Permissions.prototype.query;
+      Permissions.prototype.query = maskFn(function (desc) {
+        if (desc.name === 'notifications') {
+          return Promise.resolve({
+            state: 'default', name: 'notifications', onchange: null,
+            addEventListener: function () {},
+            removeEventListener: function () {},
+            dispatchEvent: function () { return true; }
+          });
+        }
+        return _origQuery.call(this, desc);
+      }, 'function query() { [native code] }');
+    } catch (_) {}
+
+    // Consistent pdfViewerEnabled
+    try { overrideGetter(Navigator.prototype, 'pdfViewerEnabled', () => true); } catch (_) {}
+
+    // window.chrome object
+    try {
+      if (!window.chrome) {
+        window.chrome = { runtime: {}, loadTimes: function () {}, csi: function () {} };
+      }
+    } catch (_) {}
+
+    // navigator.cookieEnabled — always true
+    try { overrideGetter(Navigator.prototype, 'cookieEnabled', () => true); } catch (_) {}
+
+    // navigator.onLine — always true
+    try { overrideGetter(Navigator.prototype, 'onLine', () => true); } catch (_) {}
+
+    // navigator.javaEnabled — always false
+    try {
+      Navigator.prototype.javaEnabled = maskFn(function () { return false; },
+        'function javaEnabled() { [native code] }');
+    } catch (_) {}
+
+    // Consistent Notification.permission
+    try {
+      if (typeof Notification !== 'undefined') {
+        Object.defineProperty(Notification, 'permission', {
+          get: maskFn(() => 'default', 'function get permission() { [native code] }'),
+          configurable: true
+        });
+      }
+    } catch (_) {}
+
+    // navigator.globalPrivacyControl — consistent
+    try {
+      overrideGetter(Navigator.prototype, 'globalPrivacyControl', () => false);
+    } catch (_) {}
   }
 
   /* ──────────────────────────────────────────────────────────────
@@ -599,4 +929,6 @@
     }, 'function fetch() { [native code] }');
   } catch (_) {}
 
+  // DO NOT set detectable global flags — no window.__GHOST_PROFILE_ACTIVE__
+  // Sites can check for these and flag as bot/spoofing
 })();
