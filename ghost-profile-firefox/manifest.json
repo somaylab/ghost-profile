@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "Ghost Profile",
+  "version": "3.1.0",
+  "description": "Stealth fingerprint spoofing for Firefox — changes what you look like, not who you are",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ghost-profile@somay.security",
+      "strict_min_version": "109.0"
+    }
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "scripts": ["src/background.js"]
+  },
+  "sidebar_action": {
+    "default_icon": "icons/icon128.png",
+    "default_title": "Ghost Profile",
+    "default_panel": "sidepanel.html"
+  },
+  "action": {
+    "default_icon": "icons/icon128.png",
+    "default_title": "Ghost Profile"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/inject.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
