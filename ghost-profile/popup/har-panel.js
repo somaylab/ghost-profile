@@ -80,42 +80,46 @@ window.GhostHarPanel = (function () {
 
     // Export HAR (.har)
     $exportHarBtn.addEventListener('click', () => {
-      api.runtime.sendMessage({ type: 'GHOST_HAR_EXPORT_HAR' }, (resp) => {
-        if (resp && resp.ok && resp.harLog) {
-          const jsonStr = JSON.stringify(resp.harLog, null, 2);
-          const blob = new Blob([jsonStr], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const filename = `ghost-profile-network-${new Date().toISOString().replace(/[:.]/g, '-')}.har`;
+      const origText = $exportHarBtn.innerHTML;
+      $exportHarBtn.innerHTML = '<span style="color:#10B981">✓ Tersimpan (.har)</span>';
+      setTimeout(() => { $exportHarBtn.innerHTML = origText; }, 1500);
 
-          if (api.downloads && api.downloads.download) {
-            api.downloads.download({ url, filename, saveAs: true }).catch(() => {
-              fallbackDownload(url, filename);
-            });
+      const filename = `ghost-profile-network-${new Date().toISOString().replace(/[:.]/g, '-')}.har`;
+
+      if (api && api.runtime && api.runtime.sendMessage) {
+        api.runtime.sendMessage({ type: 'GHOST_HAR_EXPORT_HAR' }, (resp) => {
+          if (resp && resp.ok && resp.harLog) {
+            downloadFile(JSON.stringify(resp.harLog, null, 2), filename, 'application/octet-stream');
           } else {
-            fallbackDownload(url, filename);
+            // Local fallback if background worker response was empty
+            downloadFile(JSON.stringify(buildLocalHarLog(), null, 2), filename, 'application/octet-stream');
           }
-        }
-      });
+        });
+      } else {
+        downloadFile(JSON.stringify(buildLocalHarLog(), null, 2), filename, 'application/octet-stream');
+      }
     });
 
     // Export Flow Summary (.json)
     $exportFlowBtn.addEventListener('click', () => {
-      api.runtime.sendMessage({ type: 'GHOST_HAR_EXPORT_FLOW' }, (resp) => {
-        if (resp && resp.ok && resp.flowSummary) {
-          const jsonStr = JSON.stringify(resp.flowSummary, null, 2);
-          const blob = new Blob([jsonStr], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const filename = `ghost-profile-flow-summary-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      const origText = $exportFlowBtn.innerHTML;
+      $exportFlowBtn.innerHTML = '<span style="color:#10B981">✓ Tersimpan (.json)</span>';
+      setTimeout(() => { $exportFlowBtn.innerHTML = origText; }, 1500);
 
-          if (api.downloads && api.downloads.download) {
-            api.downloads.download({ url, filename, saveAs: true }).catch(() => {
-              fallbackDownload(url, filename);
-            });
+      const filename = `ghost-profile-flow-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+
+      if (api && api.runtime && api.runtime.sendMessage) {
+        api.runtime.sendMessage({ type: 'GHOST_HAR_EXPORT_FLOW' }, (resp) => {
+          if (resp && resp.ok && resp.flowSummary) {
+            downloadFile(JSON.stringify(resp.flowSummary, null, 2), filename, 'application/json');
           } else {
-            fallbackDownload(url, filename);
+            // Local fallback if background worker response was empty
+            downloadFile(JSON.stringify(buildLocalFlowSummary(), null, 2), filename, 'application/json');
           }
-        }
-      });
+        });
+      } else {
+        downloadFile(JSON.stringify(buildLocalFlowSummary(), null, 2), filename, 'application/json');
+      }
     });
 
     // Filter Chips
@@ -164,16 +168,73 @@ window.GhostHarPanel = (function () {
     });
   }
 
-  function fallbackDownload(url, filename) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 1000);
+  function downloadFile(contentString, filename, mimeType = 'application/octet-stream') {
+    try {
+      const blob = new Blob([contentString], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (_) {}
+      }, 500);
+    } catch (err) {
+      console.error('[Ghost HAR Panel] Download error:', err);
+    }
+  }
+
+  function buildLocalHarLog() {
+    return {
+      log: {
+        version: '1.2',
+        creator: {
+          name: 'Ghost Profile HAR & Flow Engine',
+          version: '3.2.0',
+          comment: 'Global Multi-Tab & Interaction Flow Archive'
+        },
+        pages: [{
+          id: 'page_default',
+          startedDateTime: new Date().toISOString(),
+          title: 'Ghost Profile Session',
+          pageTimings: { onContentLoad: -1, onLoad: -1 }
+        }],
+        entries: entriesList
+      }
+    };
+  }
+
+  function buildLocalFlowSummary() {
+    const domainStats = {};
+    for (const e of entriesList) {
+      try {
+        if (e && e.request && e.request.url) {
+          const u = new URL(e.request.url);
+          domainStats[u.hostname] = (domainStats[u.hostname] || 0) + 1;
+        }
+      } catch (_) {}
+    }
+    return {
+      sessionOverview: {
+        generatedAt: new Date().toISOString(),
+        totalRequestsCaptured: entriesList.length,
+        tabsTracked: 1
+      },
+      topDomainsHit: domainStats,
+      interactionTimeline: entriesList
+        .filter(e => e && e._initiatingInteraction)
+        .map(e => ({
+          time: e.startedDateTime,
+          tabId: e.tabId,
+          action: e._initiatingInteraction,
+          triggeredRequest: `${e.request ? e.request.method : 'REQ'} ${e.request ? e.request.url : ''}`
+        }))
+    };
   }
 
   function refreshState() {
