@@ -183,15 +183,22 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     chrome.storage.local.set({ generatedProfile, features, enabled });
 
     const afterRules = () => {
-      // Relay to all tabs' content scripts
+      // Relay to all eligible web tabs' content scripts
       chrome.tabs.query({}, tabs => {
         for (const tab of tabs) {
+          if (!tab.id) continue;
+          if (tab.url && (tab.url.startsWith('chrome://') || tab.url.startsWith('edge://') || tab.url.startsWith('about:') || tab.url.startsWith('chrome-extension://'))) {
+            continue;
+          }
           try {
-            chrome.tabs.sendMessage(tab.id, {
+            const p = chrome.tabs.sendMessage(tab.id, {
               type: 'GHOST_UPDATE_PROFILE',
               fullProfile: generatedProfile,
               features
             });
+            if (p && typeof p.catch === 'function') {
+              p.catch(() => {});
+            }
           } catch (_) {}
         }
       });

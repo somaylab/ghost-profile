@@ -345,22 +345,28 @@
       recordedEntries.shift();
     }
 
-    // Broadcast live event to open sidepanel/popup
+    // Broadcast live event to open sidepanel/popup (safe if popup is closed)
     try {
-      api.runtime.sendMessage({
+      const p = api.runtime.sendMessage({
         type: 'GHOST_HAR_LIVE_ENTRY',
         entry,
         stats: getStats()
-      }).catch(() => {});
+      });
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => {});
+      }
     } catch (_) {}
   }
 
   function broadcastLiveStats() {
     try {
-      api.runtime.sendMessage({
+      const p = api.runtime.sendMessage({
         type: 'GHOST_HAR_STATS_UPDATE',
         stats: getStats()
-      }).catch(() => {});
+      });
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => {});
+      }
     } catch (_) {}
   }
 

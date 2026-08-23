@@ -148,12 +148,19 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       api.tabs.query({}, tabs => {
         if (!tabs) return;
         for (const tab of tabs) {
+          if (!tab.id) continue;
+          if (tab.url && (tab.url.startsWith('about:') || tab.url.startsWith('chrome:') || tab.url.startsWith('moz-extension://'))) {
+            continue;
+          }
           try {
-            api.tabs.sendMessage(tab.id, {
+            const p = api.tabs.sendMessage(tab.id, {
               type: 'GHOST_UPDATE_PROFILE',
               fullProfile: generatedProfile,
               features
             });
+            if (p && typeof p.catch === 'function') {
+              p.catch(() => {});
+            }
           } catch (_) {}
         }
       });
