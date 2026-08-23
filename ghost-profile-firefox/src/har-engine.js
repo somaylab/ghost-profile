@@ -477,7 +477,13 @@
    * FLOW SUMMARY JSON BUILDER
    * ────────────────────────────────────────────────────────────── */
   function buildFlowSummary() {
-    const tabsArray = Array.from(tabRegistry.values());
+    const tabsArray = Array.from(tabRegistry.values()).map(t => ({
+      id: t.tabId || t.id,
+      parentId: t.openerTabId || t.parentId || null,
+      isPopup: !!t.isPopup,
+      title: t.title || 'Tab',
+      url: t.url || ''
+    }));
     const domainStats = {};
 
     for (const e of recordedEntries) {
