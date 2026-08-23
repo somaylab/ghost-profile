@@ -65,10 +65,8 @@ function buildHeadersFromProfile(profile) {
 }
 
 async function applyHeaderRulesFromProfile(profile) {
-  if (!api.declarativeNetRequest) return;
-
-  // STEALTH MODE: Do NOT modify any headers — let real browser headers pass through
-  if (profile.stealthMode) {
+  if (!profile || profile.stealthMode !== false || (profile.userAgent && profile.userAgent.includes('151'))) {
+    console.log('[Ghost Profile] Stealth mode active — purging all declarativeNetRequest header rules');
     await removeHeaderRules();
     return;
   }
@@ -79,39 +77,49 @@ async function applyHeaderRulesFromProfile(profile) {
     return;
   }
 
-  const rule = {
-    id: 1,
-    priority: 1,
-    action: {
-      type: 'modifyHeaders',
-      requestHeaders
-    },
-    condition: {
-      urlFilter: '*',
-      resourceTypes: ALL_RESOURCE_TYPES
-    }
-  };
-
   try {
+    const existingRules = await api.declarativeNetRequest.getDynamicRules();
+    const removeRuleIds = existingRules.map(r => r.id);
+
     await api.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: [1],
-      addRules: [rule]
+      removeRuleIds,
+      addRules: [{
+        id: 1,
+        priority: 1,
+        action: { type: 'modifyHeaders', requestHeaders },
+        condition: {
+          urlFilter: '*',
+          resourceTypes: ALL_RESOURCE_TYPES
+        }
+      }]
     });
+    console.log(`[Ghost Profile] Header rules applied: ${profile.label || 'custom'}`);
   } catch (err) {
-    console.error('[Ghost Profile Firefox] Failed to apply header rules:', err);
+    console.error('[Ghost Profile] Failed to apply header rules:', err);
   }
 }
 
 async function removeHeaderRules() {
-  if (!api.declarativeNetRequest) return;
   try {
-    await api.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: [1]
-    });
+    const existingRules = await api.declarativeNetRequest.getDynamicRules();
+    const removeRuleIds = existingRules.map(r => r.id);
+    if (removeRuleIds.length > 0) {
+      await api.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules: [] });
+    }
+    console.log('[Ghost Profile] Header rules completely removed');
   } catch (err) {
-    console.error('[Ghost Profile Firefox] Failed to remove header rules:', err);
+    console.error('[Ghost Profile] Failed to remove header rules:', err);
   }
 }
+
+// Ensure clean dynamic rules on startup
+api.storage.local.get(['generatedProfile', 'enabled'], async (data) => {
+  if (data && data.generatedProfile) {
+    await applyHeaderRulesFromProfile(data.generatedProfile);
+  } else {
+    await removeHeaderRules();
+  }
+});
 
 /* ──────────────────────────────────────────────────────────────
  * TAB RELOAD UTILITIES

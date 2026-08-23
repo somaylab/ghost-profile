@@ -75,15 +75,18 @@ function buildHeadersFromProfile(profile) {
 
 async function applyHeaderRulesFromProfile(profile) {
   // STEALTH MODE: Do NOT modify any headers — let real browser headers pass through
-  // This prevents cross-layer inconsistency between HTTP headers and BFP JS capture
-  if (profile.stealthMode) {
-    console.log('[Ghost Profile] Stealth mode — removing all header rules (using real browser headers)');
+  // This prevents cross-layer inconsistency between HTTP headers, TLS fingerprint, and JS APIs
+  if (!profile || profile.stealthMode !== false || (profile.userAgent && profile.userAgent.includes('151'))) {
+    console.log('[Ghost Profile] Stealth mode active — purging all declarativeNetRequest header rules');
     await removeHeaderRules();
     return;
   }
 
   const requestHeaders = buildHeadersFromProfile(profile);
-  if (!requestHeaders || requestHeaders.length === 0) return;
+  if (!requestHeaders || requestHeaders.length === 0) {
+    await removeHeaderRules();
+    return;
+  }
 
   try {
     const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
@@ -114,11 +117,20 @@ async function removeHeaderRules() {
     if (removeRuleIds.length > 0) {
       await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules: [] });
     }
-    console.log('[Ghost Profile] Header rules removed');
+    console.log('[Ghost Profile] Header rules completely removed');
   } catch (err) {
     console.error('[Ghost Profile] Failed to remove header rules:', err);
   }
 }
+
+// Ensure clean dynamic rules on startup
+chrome.storage.local.get(['generatedProfile', 'enabled'], async (data) => {
+  if (data && data.generatedProfile) {
+    await applyHeaderRulesFromProfile(data.generatedProfile);
+  } else {
+    await removeHeaderRules();
+  }
+});
 
 /* ──────────────────────────────────────────────────────────────
  * RELOAD HELPERS
