@@ -1,107 +1,107 @@
-# 🦊 Ghost Profile — Panduan Penggunaan (Mozilla Firefox)
+# 🦊 Ghost Profile — User Guide (Mozilla Firefox)
 
-Ghost Profile for Firefox adalah ekstensi browser untuk penyamaran sidik jari (*stealth fingerprint spoofing*) tingkat lanjut yang dirancang khusus untuk engine **Gecko (Mozilla Firefox / Firefox Developer Edition / LibreWolf)**.
+Ghost Profile for Firefox is an advanced **stealth browser fingerprint spoofing** extension specifically engineered for the **Gecko engine (Mozilla Firefox, Firefox Developer Edition, and LibreWolf)**.
 
-Menggunakan arsitektur **Stealth Mode** yang menyamarkan parameter hardware dan rendering tanpa merusak karakteristik native Firefox (seperti `navigator.vendor: ""` dan `navigator.oscpu`), sehingga bebas dari flag deteksi anti-bot (Cloudflare, Kasada, DataDome, FingerprintJS, CreepJS).
+It uses a **Stealth Mode** architecture that preserves real Firefox binary and version signatures while respecting Firefox-native properties (such as empty `navigator.vendor: ""` and native `navigator.oscpu`). This eliminates entropy anomalies that trigger detection by anti-bot systems (such as Cloudflare Turnstile, Kasada, DataDome, FingerprintJS, and CreepJS).
 
 ---
 
-## 🚀 1. Cara Instalasi / Pemasangan di Mozilla Firefox
+## 🚀 1. Installation & Setup (Mozilla Firefox)
 
-1. Buka browser **Mozilla Firefox** atau **Firefox Developer Edition**.
-2. Ketik URL berikut di address bar:
+1. Open **Mozilla Firefox** or **Firefox Developer Edition**.
+2. Navigate to the following address:
    ```text
    about:debugging#/runtime/this-firefox
    ```
-3. Di halaman **This Firefox** (*Firefox ini*), cari bagian **Temporary Extensions** (*Pengaya Sementara*).
-4. Klik tombol **"Load Temporary Add-on..."** (*Muat Pengaya Sementara...*).
-5. Masuk ke folder: `ghost-profile-firefox` (folder ekstensi ini).
-6. Pilih file **`manifest.json`** lalu klik **Open**.
-7. Ekstensi **Ghost Profile** akan langsung aktif dan terpasang di toolbar browser Firefox Anda.
+3. On the **This Firefox** page, locate the **Temporary Extensions** section.
+4. Click the **"Load Temporary Add-on..."** button.
+5. Navigate to this folder: `ghost-profile-firefox`.
+6. Select the **`manifest.json`** file and click **Open**.
+7. The **Ghost Profile** extension will load immediately and appear on your browser toolbar.
 
 ---
 
-## 🖥️ 2. Cara Membuka & Menggunakan Sidebar Firefox
+## 🖥️ 2. Opening the Firefox Sidebar
 
-* **Membuka Sidebar**: Cukup **klik ikon Ghost Profile** di toolbar atas Firefox. Ekstensi akan otomatis membuka **Sidebar Native Firefox** di samping jendela browser Anda.
-* **Menutup / Membuka Kembali**: Klik tombol ikon Ghost Profile lagi untuk toggle (buka/tutup) sidebar.
-* **Master Switch**: Switch di pojok kanan atas header berfungsi untuk mengaktifkan / menonaktifkan seluruh proteksi ekstensi secara instan.
-
----
-
-## 🎲 3. Cara Menghasilkan Identitas Baru (*Randomize & Apply*)
-
-1. Buka sidebar Ghost Profile.
-2. Klik tombol utama di bagian bawah: **"Acak & Terapkan"** (*Randomize & Apply*).
-3. Ekstensi akan mengacak:
-   * GPU Renderer WebGL (NVIDIA, AMD, Intel)
-   * Resolusi Layar & DPR
-   * CPU Cores & RAM Memory
-   * Noise Seed Canvas, Audio, & Font
-   * Zona Waktu & Bahasa (jika tidak dikunci)
-4. Tab Firefox yang aktif akan otomatis dimuat ulang (*reload*) dengan identitas baru yang aktif secara deterministik.
-5. Centang toggle **"Muat ulang semua tab terbuka"** jika ingin menerapkan identitas baru ke seluruh tab Firefox sekaligus.
+* **Open Sidebar**: Click the **Ghost Profile icon** in the Firefox toolbar. The extension opens natively in the **Firefox Sidebar** on the side of your window.
+* **Toggle Sidebar**: Click the Ghost Profile toolbar button again to open or close the sidebar.
+* **Master Switch**: The toggle switch in the top-right corner of the header instantly activates or deactivates all protection modules globally.
 
 ---
 
-## 🌐 4. Cara Mengunci Bahasa Browser (Language Selector)
+## 🎲 3. Generating a New Identity (Randomize & Apply)
 
-1. Pada sidebar, scroll ke **Kategori 3: JARINGAN & LINGKUNGAN**.
-2. Klik baris **"Bahasa Browser"** (atau klik kotak *Bahasa* pada Kartu Identitas atas).
-3. Panel selektor bahasa akan terbuka:
-   * **Pencarian**: Ketik nama negara/bahasa (contoh: `Russian`, `ru`, `Indonesian`, `Japan`, `Germany`).
-   * **Tab Wilayah**: Pilih kategori *Semua*, *Asia*, *Eropa*, *Amerika*, atau *Afrika & Timteng*.
-4. Klik bahasa yang diinginkan (contoh: `Russian (ru-RU, ru, en)`).
-5. Status pill akan berubah menjadi hijau: `ru-RU ▸`.
-6. Klik tombol **"Acak & Terapkan"** di bawah. Browser akan selalu menggunakan bahasa pilihan Anda tersebut.
-7. **Reset ke Acak**: Buka kembali panel bahasa dan klik tombol **"Acak"** (*Random*).
-
----
-
-## ⏰ 5. Cara Mengunci Zona Waktu (Timezone Selector)
-
-1. Pada sidebar, klik baris **"Zona Waktu"** (atau klik kotak *Zona Waktu* pada Kartu Identitas atas).
-2. Panel 118 zona waktu dunia akan terbuka:
-   * Cari kota tujuan (contoh: `Tokyo`, `London`, `New York`, `Jakarta`).
-3. Klik kota yang dipilih. Status pill akan berubah menjadi hijau (contoh: `Tokyo ▸`).
-4. Klik **"Acak & Terapkan"**. Offset UTC dan `Intl.DateTimeFormat` akan terkunci ke zona waktu tersebut.
+1. Open the Ghost Profile Sidebar.
+2. Click the primary button at the bottom: **"Randomize & Apply"** (*Acak & Terapkan*).
+3. The engine generates:
+   * WebGL GPU Renderer from realistic device pools (NVIDIA, AMD, Apple Silicon, Intel)
+   * Screen Resolution, Avail Dimensions, & DPR
+   * CPU Cores & RAM Memory matching the GPU tier
+   * Seed-controlled Canvas, AudioContext, & Font Noise
+   * Timezone & Language locales (if set to random)
+4. The active Firefox tab reloads automatically with the new identity active deterministically.
+5. Check **"Reload all open tabs"** to update all open tabs simultaneously.
 
 ---
 
-## 💾 6. Fitur Data Vault (Salin & Impor JSON)
+## 🌐 4. Customizing Browser Language (Language Selector)
 
-Di bagian paling bawah sidebar terdapat menu **DATA SIDIK JARI**:
-
-* **Salin JSON (Export)**:
-  * Klik tombol **"Salin JSON"**.
-  * Seluruh profil aktif (termasuk `fingerprintHash`, seed noise canvas/audio/font, WebGL GPU, resolusi layar, bahasa, timezone) akan disalin ke clipboard Anda dalam format JSON standar.
-* **Impor Profil (Import)**:
-  * Klik **"Impor Profil"**.
-  * Tempelkan (*paste*) JSON profil yang sebelumnya disimpan ke kolom teks.
-  * Klik **"Terapkan Sidik Jari"**.
-  * Identitas browser Anda akan langsung berubah 100% identik dengan data JSON tersebut (sangat berguna untuk melanjutkan sesi dengan fingerprint yang sama persis).
-
----
-
-## 🎨 7. Kontrol Tampilan & Bahasa UI
-
-* **Ganti Bahasa Tampilan (EN / ID)**: Klik pill `EN / ID` di header untuk beralih antara 100% Bahasa Indonesia dan 100% Bahasa Inggris.
-* **Mode Gelap / Terang**: Klik ikon Bulan 🌙 / Matahari ☀️ di header untuk beralih tema Dark Mode / Light Mode.
+1. In the Sidebar, scroll to **Category 3: NETWORK & ENVIRONMENT**.
+2. Click the **"Browser Language"** row (or click the *Language* tile on the Identity Card at the top).
+3. The language selection panel opens:
+   * **Search**: Type language name or country code (e.g. `Russian`, `ru`, `Indonesian`, `Japan`, `German`).
+   * **Region Tabs**: Filter by *All*, *Asia*, *Europe*, *Americas*, or *Africa & Middle East*.
+4. Select your desired language (e.g. `Russian (ru-RU, ru, en)`).
+5. The status pill turns green: `ru-RU ▸`.
+6. Click **"Randomize & Apply"**. The browser locale is now locked to this language configuration.
+7. **Reset to Random**: Re-open the language panel and click the **"Random"** (*Acak*) button.
 
 ---
 
-## 🛡️ 8. Ringkasan Modul Proteksi di Firefox
+## ⏰ 5. Customizing Timezone (Timezone Selector)
 
-1. **Spesifikasi Perangkat (`ua`)**: Menyamarkan CPU core, RAM memory, dan preferensi platform dengan karakteristik Firefox asli (`vendor: ""`, `oscpu`).
-2. **Layar & Tampilan (`screen`)**: Memanipulasi resolusi layar, availWidth/Height, kedalaman warna, dan DPR.
-3. **Perangkat Media (`mediaDevices`)**: Mengacak daftar dan ID perangkat mikrofon & webcam.
-4. **Estimasi Penyimpanan (`storage`)**: Memodifikasi kuota penyimpanan `navigator.storage.estimate()`.
-5. **Sidik Jari Canvas (`canvas`)**: Injeksi pixel-noise deterministik (Mulberry32) pada `toDataURL` / `getImageData` → menghasilkan Canvas Hash unik.
-6. **Sidik Jari WebGL (`webgl`)**: Memanipulasi vendor GPU dan unmasked renderer string.
-7. **AudioContext Mendalam (`audio`)**: Injeksi 6 lapis noise pada analyser, buffer, & osilator → menghasilkan Audio Hash unik.
-8. **Noise Deteksi Font (`fonts`)**: Perturbasi mikro `measureText()` `±0.01px` → menghasilkan Font Hash unik.
-9. **Zona Waktu (`timezone`)**: Menyamarkan offset UTC & constructor `Intl.DateTimeFormat`.
-10. **Bahasa Browser (`language`)**: Menyamarkan `navigator.languages` dan tag locale.
-11. **Proteksi WebRTC (`webrtc`)**: Menghapus ICE servers untuk mencegah kebocoran IP lokal asli.
-12. **CSS matchMedia (`matchMedia`)**: Menyelaraskan preferensi tema `prefers-color-scheme`.
-13. **Proteksi Tambahan (`misc`)**: Menyamarkan flag `navigator.webdriver` dan plugin array.
+1. Click the **"Timezone"** row in Category 3 (or click the *Timezone* tile on the Identity Card).
+2. The 118 worldwide timezone database panel opens.
+3. Search for your target city (e.g. `Tokyo`, `London`, `New York`, `Singapore`).
+4. Click the timezone. The status pill turns green (e.g. `Tokyo ▸`).
+5. Click **"Randomize & Apply"**. UTC offset and `Intl.DateTimeFormat` will remain locked to that timezone.
+
+---
+
+## 💾 6. Fingerprint Data Vault (Export & Import JSON)
+
+At the bottom of the Sidebar, expand the **FINGERPRINT DATA** section:
+
+* **Copy JSON (Export)**:
+  * Click **"Copy JSON"**.
+  * The complete active profile (including `fingerprintHash`, noise seeds, WebGL renderer, display resolution, language, and timezone) is copied to your clipboard in standard JSON format.
+* **Import Profile**:
+  * Click **"Import Profile"**.
+  * Paste a saved fingerprint JSON into the text area.
+  * Click **"Apply Fingerprint"**.
+  * The browser identity updates immediately to match the imported JSON configuration.
+
+---
+
+## 🎨 7. Display Controls & UI Language
+
+* **UI Language Toggle (EN / ID)**: Click the `EN / ID` pill in the header to switch between 100% English and 100% Indonesian UI.
+* **Dark / Light Mode**: Click the Moon 🌙 / Sun ☀️ icon in the header to switch color themes.
+
+---
+
+## 🛡️ 8. Protection Modules Overview in Firefox
+
+1. **Hardware Specifications (`ua`)**: Spoofs CPU cores (`hardwareConcurrency`), RAM memory (`deviceMemory`), and platform properties respecting Gecko standards (`vendor: ""`, `oscpu`).
+2. **Screen & Display (`screen`)**: Modifies display resolution, avail dimensions, color depth, and DPR.
+3. **Media Devices (`mediaDevices`)**: Randomizes device counts and IDs for microphones and webcams.
+4. **Storage Estimate (`storage`)**: Modifies storage quota in `navigator.storage.estimate()`.
+5. **Canvas Fingerprint (`canvas`)**: Injects deterministic PRNG noise into `toDataURL` / `getImageData`.
+6. **WebGL Fingerprint (`webgl`)**: Overrides unmasked vendor and unmasked renderer strings.
+7. **Deep AudioContext (`audio`)**: Injects 6-layer noise into audio buffers and frequency data.
+8. **Font Enumeration Noise (`fonts`)**: Injects micro-perturbations into `measureText()` bounding boxes.
+9. **Timezone (`timezone`)**: Spoofs UTC offset and `Intl.DateTimeFormat` constructor.
+10. **Browser Language (`language`)**: Spoofs `navigator.languages` and locale tags.
+11. **WebRTC Leak Guard (`webrtc`)**: Strips ICE servers to prevent private IP leakage.
+12. **CSS matchMedia (`matchMedia`)**: Synchronizes `prefers-color-scheme` theme preferences.
+13. **Additional Protections (`misc`)**: Clears `navigator.webdriver` flags and standardizes plugin lists.
