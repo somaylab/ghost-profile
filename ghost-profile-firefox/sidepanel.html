@@ -128,7 +128,7 @@
           <!-- Active Details -->
           <div class="identity-data" id="identity-data">
             <div class="identity-hero">
-              <span class="hero-label mono" id="hero-label">Firefox 135 · WIN11 · RTX 3060</span>
+              <span class="hero-label mono" id="hero-label">Chrome 135 · WIN11 · RTX 3060</span>
             </div>
 
             <div class="specs-grid">
@@ -617,19 +617,19 @@
       <!-- ── HAR Stats Summary Strip ── -->
       <div class="har-stats-strip">
         <div class="har-stat-item">
-          <span class="har-stat-label">STATUS</span>
+          <span class="har-stat-label" data-i18n="har-stat-status">STATUS</span>
           <span class="har-stat-badge rec-paused" id="har-rec-status-pill">PAUSED ⏸</span>
         </div>
         <div class="har-stat-item">
-          <span class="har-stat-label">REQUESTS</span>
+          <span class="har-stat-label" data-i18n="har-stat-requests">REQUESTS</span>
           <span class="har-stat-val mono" id="har-req-count">0 reqs</span>
         </div>
         <div class="har-stat-item">
-          <span class="har-stat-label">TRANSFERRED</span>
+          <span class="har-stat-label" data-i18n="har-stat-transferred">TRANSFERRED</span>
           <span class="har-stat-val mono" id="har-bytes-count">0 B</span>
         </div>
         <div class="har-stat-item">
-          <span class="har-stat-label">TABS / POPUPS</span>
+          <span class="har-stat-label" data-i18n="har-stat-tabs">TABS / POPUPS</span>
           <span class="har-stat-val mono" id="har-tabs-count">1 tab</span>
         </div>
       </div>
@@ -638,14 +638,14 @@
       <div class="har-toolbar">
         <button class="har-btn har-btn-record" id="har-rec-toggle" title="Mulai / Jeda Perekaman Global">
           <span class="rec-dot"></span>
-          <span class="btn-text">Rekam</span>
+          <span class="btn-text" data-i18n="har-btn-record">Rekam</span>
         </button>
         <button class="har-btn har-btn-sub" id="har-clear-btn" title="Hapus Buffer Log">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
-          <span class="btn-text">Bersihkan</span>
+          <span class="btn-text" data-i18n="har-btn-clear">Bersihkan</span>
         </button>
         <button class="har-btn har-btn-sub" id="har-export-har-btn" title="Unduh Arsip Lengkap (.har)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -653,7 +653,7 @@
             <polyline points="7 10 12 15 17 10"></polyline>
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
-          <span class="btn-text">Unduh .har</span>
+          <span class="btn-text" data-i18n="har-btn-export-har">Unduh .har</span>
         </button>
         <button class="har-btn har-btn-sub" id="har-export-flow-btn" title="Unduh Pohon Hubungan Multi-Tab (.json)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -662,7 +662,7 @@
             <circle cx="6" cy="18" r="3"></circle>
             <path d="M18 9a9 9 0 0 1-9 9"></path>
           </svg>
-          <span class="btn-text">Flow JSON</span>
+          <span class="btn-text" data-i18n="har-btn-export-flow">Flow JSON</span>
         </button>
       </div>
 
@@ -676,11 +676,11 @@
           <input type="text" class="har-search-input mono" id="har-search-input" placeholder="Filter URL / Host..." autocomplete="off" spellcheck="false">
         </div>
         <div class="har-filter-chips">
-          <button class="har-filter-chip active" data-filter="all">SEMUA</button>
-          <button class="har-filter-chip" data-filter="xhr">FETCH / XHR</button>
-          <button class="har-filter-chip" data-filter="auth">AUTH / SSO</button>
-          <button class="har-filter-chip" data-filter="doc">DOCS</button>
-          <button class="har-filter-chip" data-filter="media">MEDIA</button>
+          <button class="har-filter-chip active" data-filter="all" data-i18n="har-filter-all">SEMUA</button>
+          <button class="har-filter-chip" data-filter="xhr" data-i18n="har-filter-xhr">FETCH / XHR</button>
+          <button class="har-filter-chip" data-filter="auth" data-i18n="har-filter-auth">AUTH / SSO</button>
+          <button class="har-filter-chip" data-filter="doc" data-i18n="har-filter-doc">DOCS</button>
+          <button class="har-filter-chip" data-filter="media" data-i18n="har-filter-media">MEDIA</button>
         </div>
       </div>
 
@@ -695,7 +695,7 @@
       <div class="har-inspector-modal" id="har-inspector-modal" style="display: none;">
         <div class="inspector-card">
           <div class="inspector-header">
-            <span class="inspector-title">Detail Request &amp; Response</span>
+            <span class="inspector-title" data-i18n="har-inspector-title">Detail Request &amp; Response</span>
             <button class="inspector-close-btn" id="har-inspector-close" title="Tutup">✕</button>
           </div>
           <div class="inspector-body" id="har-inspector-body">

@@ -92,11 +92,16 @@
   let isLangPanelOpen = false;
   let currentLang = 'id';   // 'en' or 'id'
   let currentTheme = 'dark'; // 'dark' or 'light'
+  let currentTab = 'spoof';  // 'spoof' or 'har'
+  let isSpoofEnabled = true;
+  let isHarRecording = false;
 
   /* ── i18n Translation Map (100% Pure EN / 100% Pure ID) ── */
   const TRANSLATIONS = {
     // Header & Tooltips
     'master-switch-title': { en: 'Enable / Disable Protection', id: 'Aktifkan / Nonaktifkan Proteksi' },
+    'switch-spoof-title': { en: 'Enable / Disable Identity Protection', id: 'Aktifkan / Nonaktifkan Proteksi Identitas' },
+    'switch-har-title': { en: 'Enable / Disable HAR Recording', id: 'Aktifkan / Nonaktifkan Perekaman HAR' },
     'lang-toggle-title': { en: 'Switch language (EN / ID)', id: 'Ganti bahasa (EN / ID)' },
     'theme-toggle-title': { en: 'Switch theme (Dark / Light)', id: 'Ganti tema (Gelap / Terang)' },
 
@@ -217,6 +222,58 @@
     'cta-failed': { en: 'Failed!', id: 'Gagal!' },
     'cta-reloading': { en: 'Active · Reloading...', id: 'Aktif · Memuat ulang...' },
     'cta-active': { en: 'New Identity Active!', id: 'Identitas Baru Aktif!' },
+
+    // HAR Tab Headers & Controls
+    'har-stat-status': { en: 'STATUS', id: 'STATUS' },
+    'har-stat-requests': { en: 'REQUESTS', id: 'PERMINTAAN' },
+    'har-stat-transferred': { en: 'TRANSFERRED', id: 'DITRANSFER' },
+    'har-stat-tabs': { en: 'TABS / POPUPS', id: 'TAB / POPUP' },
+    'har-rec-status-rec': { en: 'REC 🔴', id: 'REKAM 🔴' },
+    'har-rec-status-paused': { en: 'PAUSED ⏸', id: 'JEDA ⏸' },
+    'har-unit-reqs': { en: 'reqs', id: 'reqs' },
+    'har-unit-tab': { en: 'tab', id: 'tab' },
+    'har-unit-tabs': { en: 'tabs', id: 'tab' },
+    
+    // HAR Toolbar Buttons
+    'har-btn-record': { en: 'Record', id: 'Rekam' },
+    'har-btn-pause': { en: 'Pause', id: 'Jeda' },
+    'har-btn-record-title': { en: 'Start / Pause Global Recording', id: 'Mulai / Jeda Perekaman Global' },
+    'har-btn-clear': { en: 'Clear', id: 'Bersihkan' },
+    'har-btn-clear-title': { en: 'Clear Log Buffer', id: 'Hapus Buffer Log' },
+    'har-btn-export-har': { en: 'Download .har', id: 'Unduh .har' },
+    'har-btn-export-har-title': { en: 'Download Full Archive (.har)', id: 'Unduh Arsip Lengkap (.har)' },
+    'har-btn-export-flow': { en: 'Flow JSON', id: 'Flow JSON' },
+    'har-btn-export-flow-title': { en: 'Download Multi-Tab Lineage Tree (.json)', id: 'Unduh Pohon Hubungan Multi-Tab (.json)' },
+    'har-toast-saved-har': { en: '✓ Saved (.har)', id: '✓ Tersimpan (.har)' },
+    'har-toast-saved-json': { en: '✓ Saved (.json)', id: '✓ Tersimpan (.json)' },
+
+    // HAR Filters
+    'har-search-placeholder': { en: 'Filter URL / Host...', id: 'Filter URL / Host...' },
+    'har-filter-all': { en: 'ALL', id: 'SEMUA' },
+    'har-filter-xhr': { en: 'FETCH / XHR', id: 'FETCH / XHR' },
+    'har-filter-auth': { en: 'AUTH / SSO', id: 'AUTH / SSO' },
+    'har-filter-doc': { en: 'DOCS', id: 'DOKUMEN' },
+    'har-filter-media': { en: 'MEDIA', id: 'MEDIA' },
+
+    // HAR Empty State
+    'har-empty-title': { en: 'No requests recorded yet', id: 'Belum ada request terekam' },
+    'har-empty-desc': { en: 'Turn on the recorder then navigate or interact with any web page.', id: 'Nyalakan perekam lalu buka halaman atau lakukan interaksi di web.' },
+
+    // HAR Inspector Modal
+    'har-inspector-title': { en: 'Request & Response Details', id: 'Detail Request & Response' },
+    'har-inspector-close-title': { en: 'Close', id: 'Tutup' },
+    'har-info-general': { en: 'General Information', id: 'Informasi Umum' },
+    'har-info-req-body': { en: 'Request Body / Payload', id: 'Request Body / Payload' },
+    'har-info-res-body': { en: 'Response Payload', id: 'Response Payload' },
+    'har-info-req-headers': { en: (n) => `Request Headers (${n})`, id: (n) => `Request Headers (${n})` },
+    'har-info-res-headers': { en: (n) => `Response Headers (${n})`, id: (n) => `Response Headers (${n})` },
+    'har-info-no-req-headers': { en: 'No Request Headers', id: 'Tidak Ada Request Headers' },
+    'har-info-no-res-headers': { en: 'No Response Headers', id: 'Tidak Ada Response Headers' },
+    'har-info-no-req-body': { en: 'No Request Body', id: 'Body Request Kosong' },
+    'har-info-no-res-body': { en: 'No Response Payload', id: 'Payload Response Kosong' },
+    'har-info-tab-parent': { en: 'Parent Tab:', id: 'Induk Tab:' },
+    'har-info-tab-action': { en: 'Trigger Action:', id: 'Aksi Pemicu:' },
+    'har-info-tab-latency': { en: 'Latency / IP:', id: 'Latensi / IP:' },
   };
 
   /** Get translated string helper */
@@ -884,12 +941,34 @@
     sendProfileToBackground(generatedProfile, features, enabled, reloadAll);
   });
 
-  // Master Switch Change
+  // Master Switch Change (Context-Aware per Tab)
   $masterSwitch.addEventListener('change', () => {
-    const isEnabled = $masterSwitch.checked;
-    if (isEnabled) $container.classList.remove('disabled');
-    else $container.classList.add('disabled');
-    refreshModuleCounts();
+    if (currentTab === 'spoof') {
+      isSpoofEnabled = $masterSwitch.checked;
+      if (isSpoofEnabled) $container.classList.remove('disabled');
+      else $container.classList.add('disabled');
+      refreshModuleCounts();
+
+      // Collect features and sync with background
+      const features = {};
+      $featureToggles.forEach($t => {
+        features[$t.getAttribute('data-feature')] = $t.checked;
+      });
+      const reloadAll = $reloadAll.checked;
+      if (currentProfile) {
+        sendProfileToBackground(currentProfile, features, isSpoofEnabled, false);
+      } else if (chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({
+          type: 'GHOST_TOGGLE_ENABLED',
+          enabled: isSpoofEnabled
+        });
+      }
+    } else if (currentTab === 'har') {
+      isHarRecording = $masterSwitch.checked;
+      if (window.GhostHarPanel) {
+        window.GhostHarPanel.toggleRecording(isHarRecording);
+      }
+    }
   });
 
   // Feature Toggle Changes
@@ -906,7 +985,9 @@
     document.documentElement.lang = currentLang;
 
     // Header Tooltips & Titles
-    if ($masterSwitchLabel) $masterSwitchLabel.title = t('master-switch-title');
+    if ($masterSwitchLabel) {
+      $masterSwitchLabel.title = currentTab === 'har' ? t('switch-har-title') : t('switch-spoof-title');
+    }
     if ($langToggle) $langToggle.title = t('lang-toggle-title');
     if ($themeToggle) $themeToggle.title = t('theme-toggle-title');
 
@@ -1024,6 +1105,11 @@
     const $ctaText = $applyBtn.querySelector('.cta-text');
     if ($ctaText && !$applyBtn.disabled) $ctaText.textContent = t('cta-text');
 
+    // HAR View Translation Bridge
+    if (window.GhostHarPanel && typeof window.GhostHarPanel.applyLanguage === 'function') {
+      window.GhostHarPanel.applyLanguage(t);
+    }
+
     // Refresh dynamic status, waveform, and pills
     refreshModuleCounts();
     updateTzPill();
@@ -1079,8 +1165,17 @@
   const $viewSpoof = document.getElementById('view-spoof');
   const $viewHar = document.getElementById('view-har');
 
+  function syncHarState(stats) {
+    if (!stats) return;
+    isHarRecording = !!stats.isRecording;
+    if (currentTab === 'har') {
+      $masterSwitch.checked = isHarRecording;
+    }
+  }
+
   if ($tabBtnSpoof && $tabBtnHar && $viewSpoof && $viewHar) {
     $tabBtnSpoof.addEventListener('click', () => {
+      currentTab = 'spoof';
       $tabBtnSpoof.classList.add('active');
       $tabBtnSpoof.setAttribute('aria-selected', 'true');
       $tabBtnHar.classList.remove('active');
@@ -1090,9 +1185,16 @@
       $viewSpoof.style.display = 'flex';
       $viewHar.classList.remove('active');
       $viewHar.style.display = 'none';
+
+      // Switch context of master toggle to Spoof Protection
+      $masterSwitch.checked = isSpoofEnabled;
+      if ($masterSwitchLabel) $masterSwitchLabel.title = t('switch-spoof-title');
+      if (!isSpoofEnabled) $container.classList.add('disabled');
+      else $container.classList.remove('disabled');
     });
 
     $tabBtnHar.addEventListener('click', () => {
+      currentTab = 'har';
       $tabBtnHar.classList.add('active');
       $tabBtnHar.setAttribute('aria-selected', 'true');
       $tabBtnSpoof.classList.remove('active');
@@ -1103,8 +1205,14 @@
       $viewSpoof.classList.remove('active');
       $viewSpoof.style.display = 'none';
 
+      // Switch context of master toggle to HAR Recording
+      $masterSwitch.checked = isHarRecording;
+      if ($masterSwitchLabel) $masterSwitchLabel.title = t('switch-har-title');
+      $container.classList.remove('disabled');
+
       if (window.GhostHarPanel) {
-        window.GhostHarPanel.init(t);
+        window.GhostHarPanel.init(t, syncHarState);
+        window.GhostHarPanel.applyLanguage(t);
         window.GhostHarPanel.refreshState();
       }
     });
@@ -1112,7 +1220,7 @@
 
   // Initialize HAR panel
   if (window.GhostHarPanel) {
-    window.GhostHarPanel.init(t);
+    window.GhostHarPanel.init(t, syncHarState);
   }
 
   /* ══════════════════════════════════════════════════════
@@ -1124,9 +1232,12 @@
 
       const { generatedProfile, features, enabled } = resp;
 
-      $masterSwitch.checked = enabled !== false;
-      if (!enabled) $container.classList.add('disabled');
-      else $container.classList.remove('disabled');
+      isSpoofEnabled = enabled !== false;
+      if (currentTab === 'spoof') {
+        $masterSwitch.checked = isSpoofEnabled;
+        if (!isSpoofEnabled) $container.classList.add('disabled');
+        else $container.classList.remove('disabled');
+      }
 
       if (features) {
         $featureToggles.forEach($t => {
