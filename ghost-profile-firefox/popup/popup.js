@@ -753,7 +753,7 @@
     FP_KEYS.forEach(k => {
       if (profile[k] !== undefined && profile[k] !== null) fp[k] = profile[k];
     });
-    fp._ghostVersion = '4.0';
+    fp._ghostVersion = '4.1';
     fp._exportedAt = new Date().toISOString();
     return fp;
   }

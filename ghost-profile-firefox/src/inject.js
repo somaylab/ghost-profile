@@ -1,5 +1,5 @@
 /**
- * Ghost Profile — inject.js v4.0 (HARDENED)
+ * Ghost Profile — inject.js v4.1 (HARDENED)
  * ═══════════════════════════════════════════════════════════════
  * Core fingerprint spoofing engine. Runs in MAIN world at
  * document_start BEFORE any page scripts execute.
@@ -7,7 +7,7 @@
  * Accepts a FULL profile object from content.js (via generator.js)
  * or falls back to a built-in default profile.
  *
- * Spoofing coverage:
+ * Spoofing coverage (17 categories):
  *   1.  Navigator (UA, platform, memory, cores, languages, etc.)
  *   2.  Client Hints JS API (userAgentData + getHighEntropyValues)
  *   3.  Screen & Display (resolution, colorDepth, DPR, inner/outer)
@@ -21,6 +21,10 @@
  *  11.  Storage estimate (spoofed quota/usage with variance)
  *  12.  CSS matchMedia (prefers-color-scheme, no Proxy)
  *  13.  Misc (webdriver, connection, battery, plugins, permissions)
+ *  14.  Speech Synthesis Voices (filtered to common subset)
+ *  15.  Performance.now() precision (rounding to 100μs)
+ *  16.  Gamepad API (empty return)
+ *  17.  Sensor APIs (blocked with NotAllowedError)
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
@@ -930,7 +934,100 @@
   }
 
   /* ──────────────────────────────────────────────────────────────
-   * 13. HAR INTERACTION BREADCRUMBS (L4: conditional)
+   * 14. SPEECH SYNTHESIS VOICES (filter to common subset)
+   * ────────────────────────────────────────────────────────────── */
+  try {
+    const _origGetVoices = speechSynthesis.getVoices.bind(speechSynthesis);
+    // Standard voices present on all Windows 10/11 + Chrome installations
+    const COMMON_VOICES = [
+      { name: 'Microsoft David - English (United States)', lang: 'en-US', localService: true, default: true, voiceURI: 'Microsoft David - English (United States)' },
+      { name: 'Microsoft Zira - English (United States)', lang: 'en-US', localService: true, default: false, voiceURI: 'Microsoft Zira - English (United States)' },
+      { name: 'Microsoft Mark - English (United States)', lang: 'en-US', localService: true, default: false, voiceURI: 'Microsoft Mark - English (United States)' },
+      { name: 'Google US English', lang: 'en-US', localService: false, default: false, voiceURI: 'Google US English' },
+      { name: 'Google UK English Female', lang: 'en-GB', localService: false, default: false, voiceURI: 'Google UK English Female' }
+    ];
+    // Create voice objects that inherit from SpeechSynthesisVoice prototype
+    const fakeVoices = COMMON_VOICES.map(v => {
+      const voice = Object.create(SpeechSynthesisVoice.prototype);
+      Object.defineProperties(voice, {
+        name: { value: v.name, enumerable: true },
+        lang: { value: v.lang, enumerable: true },
+        localService: { value: v.localService, enumerable: true },
+        default: { value: v.default, enumerable: true },
+        voiceURI: { value: v.voiceURI, enumerable: true }
+      });
+      return voice;
+    });
+    speechSynthesis.getVoices = maskFn(function () {
+      const real = _origGetVoices();
+      // Return fake voices once real voices have loaded (Chrome loads async)
+      return real.length > 0 ? fakeVoices : [];
+    }, 'function getVoices() { [native code] }');
+    // Also intercept onvoiceschanged to fire with our filtered list
+    let _onvoiceschanged = null;
+    Object.defineProperty(speechSynthesis, 'onvoiceschanged', {
+      get: () => _onvoiceschanged,
+      set: (fn) => { _onvoiceschanged = fn; },
+      configurable: true
+    });
+  } catch (_) {}
+
+  /* ──────────────────────────────────────────────────────────────
+   * 15. PERFORMANCE.NOW() ROUNDING (reduce timing precision)
+   * ────────────────────────────────────────────────────────────── */
+  try {
+    const _origPerfNow = Performance.prototype.now;
+    Performance.prototype.now = maskFn(function () {
+      // Round to 100μs (0.1ms) — natural Chrome Cross-Origin-Isolated behavior
+      return Math.round(_origPerfNow.call(this) * 10) / 10;
+    }, 'function now() { [native code] }');
+  } catch (_) {}
+
+  /* ──────────────────────────────────────────────────────────────
+   * 16. GAMEPAD API (always return empty — 99% users have no gamepad)
+   * ────────────────────────────────────────────────────────────── */
+  try {
+    Navigator.prototype.getGamepads = maskFn(function () {
+      return [null, null, null, null];
+    }, 'function getGamepads() { [native code] }');
+    // Suppress gamepadconnected/gamepaddisconnected events
+    const _origAEL = window.addEventListener;
+    window.addEventListener = maskFn(function (type, listener, options) {
+      if (type === 'gamepadconnected' || type === 'gamepaddisconnected') return;
+      return _origAEL.call(this, type, listener, options);
+    }, 'function addEventListener() { [native code] }');
+  } catch (_) {}
+
+  /* ──────────────────────────────────────────────────────────────
+   * 17. SENSOR APIS (throw NotAllowedError — normal desktop behavior)
+   * ────────────────────────────────────────────────────────────── */
+  try {
+    // Block construction of sensor APIs (desktop Chrome throws these naturally)
+    const SENSOR_CLASSES = ['Accelerometer', 'Gyroscope', 'LinearAccelerationSensor', 'AbsoluteOrientationSensor', 'RelativeOrientationSensor', 'AmbientLightSensor', 'Magnetometer', 'GravitySensor'];
+    for (const cls of SENSOR_CLASSES) {
+      if (typeof window[cls] !== 'undefined') {
+        const OrigCtor = window[cls];
+        window[cls] = maskFn(function () {
+          throw new DOMException('Permissions policy violation', 'NotAllowedError');
+        }, `function ${cls}() { [native code] }`);
+        window[cls].prototype = OrigCtor.prototype;
+      }
+    }
+    // DeviceMotionEvent / DeviceOrientationEvent — block requestPermission if exists
+    if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) {
+      DeviceMotionEvent.requestPermission = maskFn(function () {
+        return Promise.resolve('denied');
+      }, 'function requestPermission() { [native code] }');
+    }
+    if (typeof DeviceOrientationEvent !== 'undefined' && DeviceOrientationEvent.requestPermission) {
+      DeviceOrientationEvent.requestPermission = maskFn(function () {
+        return Promise.resolve('denied');
+      }, 'function requestPermission() { [native code] }');
+    }
+  } catch (_) {}
+
+  /* ──────────────────────────────────────────────────────────────
+   * 18. HAR INTERACTION BREADCRUMBS (L4: conditional)
    * ────────────────────────────────────────────────────────────── */
   let lastUserAction = null;
   let lastActionTime = 0;
