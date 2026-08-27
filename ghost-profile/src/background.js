@@ -89,43 +89,39 @@ async function applyHeaderRulesFromProfile(profile) {
     return;
   }
 
-  // C7: Even in stealth mode, we MUST set Accept-Language to match spoofed navigator.languages
-  // This prevents HTTP Accept-Language vs JS navigator.languages inconsistency
-  if (profile.stealthMode !== false) {
-    console.log('[Ghost Profile] Stealth mode — setting Accept-Language only');
-    try {
-      const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
-      const removeRuleIds = existingRules.map(r => r.id);
-      const langHeaders = [];
-      if (profile.languages && Array.isArray(profile.languages) && profile.languages.length > 0) {
-        const acceptLang = profile.languages.map((lang, i) => {
-          if (i === 0) return lang;
-          const q = Math.max(0.1, 1 - (i * 0.1)).toFixed(1);
-          return `${lang};q=${q}`;
-        }).join(',');
-        langHeaders.push({ header: 'Accept-Language', operation: 'set', value: acceptLang });
-      }
-      if (langHeaders.length > 0) {
-        await chrome.declarativeNetRequest.updateDynamicRules({
-          removeRuleIds,
-          addRules: [{
-            id: 1, priority: 1,
-            action: { type: 'modifyHeaders', requestHeaders: langHeaders },
-            condition: { urlFilter: '*', resourceTypes: ALL_RESOURCE_TYPES }
-          }]
-        });
-        console.log('[Ghost Profile] Accept-Language header applied:', langHeaders[0].value);
-      } else {
-        if (removeRuleIds.length > 0) await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules: [] });
-      }
-    } catch (err) {
-      console.error('[Ghost Profile] Failed to apply Accept-Language:', err);
-    }
-    return;
+  const headers = {};
+
+  // 1. Synchronize Accept-Language with spoofed languages
+  if (profile.languages && Array.isArray(profile.languages) && profile.languages.length > 0) {
+    const acceptLang = profile.languages.map((lang, i) => {
+      if (i === 0) return lang;
+      const q = Math.max(0.1, 1 - (i * 0.1)).toFixed(1);
+      return `${lang};q=${q}`;
+    }).join(',');
+    headers['Accept-Language'] = acceptLang;
   }
 
-  const requestHeaders = buildHeadersFromProfile(profile);
-  if (!requestHeaders || requestHeaders.length === 0) {
+  // 2. If non-stealth mode (custom UA active), apply User-Agent and all Client Hints
+  if (profile.stealthMode === false && profile.userAgent) {
+    headers['User-Agent'] = profile.userAgent;
+    if (profile.chUA) headers['Sec-CH-UA'] = profile.chUA;
+    if (profile.chUAMobile) headers['Sec-CH-UA-Mobile'] = profile.chUAMobile;
+    if (profile.chUAPlatform) headers['Sec-CH-UA-Platform'] = profile.chUAPlatform;
+    if (profile.chUAPlatformVersion) headers['Sec-CH-UA-Platform-Version'] = profile.chUAPlatformVersion;
+    if (profile.chUAArch) headers['Sec-CH-UA-Arch'] = profile.chUAArch;
+    if (profile.chUABitness) headers['Sec-CH-UA-Bitness'] = profile.chUABitness;
+    if (profile.chUAFullVersionList) headers['Sec-CH-UA-Full-Version-List'] = profile.chUAFullVersionList;
+    if (profile.chUAModel) headers['Sec-CH-UA-Model'] = profile.chUAModel;
+  }
+
+  const requestHeaders = [];
+  for (const [header, value] of Object.entries(headers)) {
+    if (value !== undefined && value !== null && value !== '') {
+      requestHeaders.push({ header, operation: 'set', value });
+    }
+  }
+
+  if (requestHeaders.length === 0) {
     await removeHeaderRules();
     return;
   }
@@ -146,7 +142,7 @@ async function applyHeaderRulesFromProfile(profile) {
         }
       }]
     });
-    console.log(`[Ghost Profile] Header rules applied: ${profile.label || 'custom'}`);
+    console.log(`[Ghost Profile] Header rules applied (${requestHeaders.length} headers): ${profile.label || 'custom'}`);
   } catch (err) {
     console.error('[Ghost Profile] Failed to apply header rules:', err);
   }
