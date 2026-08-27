@@ -54,6 +54,16 @@ function buildHeadersFromProfile(profile) {
   if (profile.chUAMobile) headers['Sec-CH-UA-Mobile'] = profile.chUAMobile;
   if (profile.chUAPlatform) headers['Sec-CH-UA-Platform'] = profile.chUAPlatform;
 
+  // C7: Add Accept-Language header matching spoofed navigator.languages
+  if (profile.languages && Array.isArray(profile.languages) && profile.languages.length > 0) {
+    const acceptLang = profile.languages.map((lang, i) => {
+      if (i === 0) return lang;
+      const q = Math.max(0.1, 1 - (i * 0.1)).toFixed(1);
+      return `${lang};q=${q}`;
+    }).join(',');
+    headers['Accept-Language'] = acceptLang;
+  }
+
   const requestHeaders = [];
   for (const [header, value] of Object.entries(headers)) {
     if (value !== undefined && value !== null) {
@@ -65,9 +75,41 @@ function buildHeadersFromProfile(profile) {
 }
 
 async function applyHeaderRulesFromProfile(profile) {
-  if (!profile || profile.stealthMode !== false || (profile.userAgent && profile.userAgent.includes('151'))) {
-    console.log('[Ghost Profile] Stealth mode active — purging all declarativeNetRequest header rules');
+  if (!profile) {
     await removeHeaderRules();
+    return;
+  }
+
+  // C7: Even in stealth mode, set Accept-Language to match spoofed navigator.languages
+  if (profile.stealthMode !== false) {
+    console.log('[Ghost Profile] Stealth mode — setting Accept-Language only');
+    try {
+      const existingRules = await api.declarativeNetRequest.getDynamicRules();
+      const removeRuleIds = existingRules.map(r => r.id);
+      const langHeaders = [];
+      if (profile.languages && Array.isArray(profile.languages) && profile.languages.length > 0) {
+        const acceptLang = profile.languages.map((lang, i) => {
+          if (i === 0) return lang;
+          const q = Math.max(0.1, 1 - (i * 0.1)).toFixed(1);
+          return `${lang};q=${q}`;
+        }).join(',');
+        langHeaders.push({ header: 'Accept-Language', operation: 'set', value: acceptLang });
+      }
+      if (langHeaders.length > 0) {
+        await api.declarativeNetRequest.updateDynamicRules({
+          removeRuleIds,
+          addRules: [{
+            id: 1, priority: 1,
+            action: { type: 'modifyHeaders', requestHeaders: langHeaders },
+            condition: { urlFilter: '*', resourceTypes: ALL_RESOURCE_TYPES }
+          }]
+        });
+      } else {
+        if (removeRuleIds.length > 0) await api.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules: [] });
+      }
+    } catch (err) {
+      console.error('[Ghost Profile] Failed to apply Accept-Language:', err);
+    }
     return;
   }
 
@@ -144,6 +186,23 @@ function reloadAllTabs() {
 }
 
 /* ──────────────────────────────────────────────────────────────
+ * L4: BROADCAST HAR RECORDING STATE
+ * ────────────────────────────────────────────────────────────── */
+function broadcastHarState(isRecording) {
+  api.tabs.query({}, tabs => {
+    if (!tabs) return;
+    for (const tab of tabs) {
+      if (!tab.id) continue;
+      if (tab.url && (tab.url.startsWith('about:') || tab.url.startsWith('chrome:') || tab.url.startsWith('moz-extension://'))) continue;
+      try {
+        const p = api.tabs.sendMessage(tab.id, { type: 'GHOST_UPDATE_PROFILE', harRecording: isRecording });
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      } catch (_) {}
+    }
+  });
+}
+
+/* ──────────────────────────────────────────────────────────────
  * MESSAGE HANDLING
  * ────────────────────────────────────────────────────────────── */
 api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -210,12 +269,14 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // ── HAR RECORDER CONTROLS ──
   if (msg.type === 'GHOST_HAR_START') {
     const ok = self.GhostHarEngine ? self.GhostHarEngine.startRecording() : false;
+    broadcastHarState(true);
     sendResponse({ ok, stats: self.GhostHarEngine ? self.GhostHarEngine.getStats() : null });
     return true;
   }
 
   if (msg.type === 'GHOST_HAR_STOP') {
     const ok = self.GhostHarEngine ? self.GhostHarEngine.stopRecording() : false;
+    broadcastHarState(false);
     sendResponse({ ok, stats: self.GhostHarEngine ? self.GhostHarEngine.getStats() : null });
     return true;
   }

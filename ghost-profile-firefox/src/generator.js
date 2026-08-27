@@ -1,28 +1,33 @@
 /**
- * Ghost Profile (Firefox) — generator.js (STEALTH MODE)
+ * Ghost Profile — generator.js v3 (STEALTH MODE)
  * ═══════════════════════════════════════════════════════════════
- * Dedicated Firefox Profile Generator Engine.
- * Uses REAL Firefox version & Gecko platform characteristics to
- * maintain cross-layer consistency.
+ * KEY DESIGN CHANGE: No longer spoofs Chrome version or OS.
+ * Uses the REAL browser version (detected at runtime) to maintain
+ * cross-layer consistency between HTTP headers, JS APIs, and
+ * BFP (FingerprintJS Watson) captures.
  *
  * What IS randomized (unique per identity):
  *   - WebGL GPU renderer string (from realistic pool)
- *   - Canvas noise seed (deterministic Mulberry32 PRNG)
+ *   - Canvas noise seed (deterministic PRNG)
  *   - Audio noise seed
  *   - Font noise seed  
- *   - Screen resolution & DPR
+ *   - Screen resolution
  *   - Hardware specs (cores, memory) matching GPU tier
- *   - Timezone & UTC offset
+ *   - Timezone
  *   - Language set
  *   - Media devices (random count & IDs)
  *   - Storage estimate
  *   - Color scheme preference
  *
- * What is NOT changed (stays as real Firefox browser):
- *   - Firefox version number & Gecko release
- *   - OS platform & oscpu
- *   - Vendor string (empty string "" in Firefox)
- *   - Client Hints (omitted, as Firefox does not support them)
+ * What is NOT changed (stays as real browser):
+ *   - Chrome/Edge version number
+ *   - OS platform
+ *   - Platform version
+ *   - Architecture / Bitness
+ *   - Client Hints version strings
+ *
+ * This ensures BFP Watson sees the SAME browser version from
+ * both HTTP headers and JS API, eliminating SERVICE_ERROR.
  * ═══════════════════════════════════════════════════════════════
  */
 window.GhostGenerator = (function () {
@@ -31,50 +36,73 @@ window.GhostGenerator = (function () {
   /* ── Utility ─────────────────────────────────────────── */
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const hexId = (len) => Array.from({ length: len }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  // L9: Use crypto.getRandomValues for better entropy in device IDs
+  const hexId = (len) => {
+    try {
+      const bytes = new Uint8Array(Math.ceil(len / 2));
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').substring(0, len);
+    } catch (_) {
+      return Array.from({ length: len }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    }
+  };
 
   /* ══════════════════════════════════════════════════════
-   * REAL FIREFOX BROWSER DETECTION
+   * REAL BROWSER DETECTION
    * ══════════════════════════════════════════════════════ */
   function detectRealBrowser() {
     const ua = navigator.userAgent;
-    const ffMatch = ua.match(/Firefox\/(\d+(\.\d+)*)/);
     const chromeMatch = ua.match(/Chrome\/(\d+)\.(\d+)\.(\d+)\.(\d+)/);
-
-    let ffMajor = 135;
-    let ffFull = '135.0';
-    let isFirefox = true;
-
-    if (ffMatch) {
-      ffMajor = parseInt(ffMatch[1]);
-      ffFull = ffMatch[1];
-    } else if (chromeMatch) {
-      // Running in Chromium-based test engine
-      isFirefox = false;
-      ffMajor = parseInt(chromeMatch[1]);
-      ffFull = chromeMatch[0];
+    const edgeMatch = ua.match(/Edg\/(\d+\.\d+\.\d+\.\d+)/);
+    
+    let chromeMajor = 135;
+    let chromeFull = '135.0.7049.96';
+    let isEdge = false;
+    let edgeBuild = '';
+    
+    if (chromeMatch) {
+      chromeMajor = parseInt(chromeMatch[1]);
+      chromeFull = `${chromeMatch[1]}.${chromeMatch[2]}.${chromeMatch[3]}.${chromeMatch[4]}`;
+    }
+    if (edgeMatch) {
+      isEdge = true;
+      edgeBuild = edgeMatch[1];
     }
 
     // Detect OS from UA
     let osId = 'win11';
-    let oscpu = 'Windows NT 10.0; Win64; x64';
-    if (ua.includes('Macintosh')) {
-      osId = 'macos';
-      oscpu = 'Intel Mac OS X 10.15';
-    } else if (ua.includes('Linux') && !ua.includes('Android')) {
-      osId = 'linux';
-      oscpu = 'Linux x86_64';
-    } else if (ua.includes('Windows')) {
-      osId = 'win11';
-      oscpu = 'Windows NT 10.0; Win64; x64';
+    if (ua.includes('Macintosh')) osId = 'macos';
+    else if (ua.includes('Linux') && !ua.includes('Android')) osId = 'linux';
+    else if (ua.includes('Windows')) {
+      // Differentiate Win10 vs Win11 via platform version if possible
+      osId = 'win11'; // Default to win11 since UA is same for both
+    }
+
+    // Get real platform version from userAgentData if available
+    let realPlatformVersion = null;
+    if (navigator.userAgentData) {
+      // We can't call getHighEntropyValues synchronously, 
+      // so we read what's available
+      realPlatformVersion = null; // Will be set via async init if needed
+    }
+
+    // Detect sec-ch-ua from current headers (not accessible from JS directly)
+    // We'll reconstruct it from navigator.userAgentData if available
+    let realSecChUa = '';
+    let realBrands = [];
+    if (navigator.userAgentData && navigator.userAgentData.brands) {
+      realBrands = navigator.userAgentData.brands.map(b => ({ brand: b.brand, version: b.version }));
+      realSecChUa = realBrands.map(b => `"${b.brand}";v="${b.version}"`).join(', ');
     }
 
     return {
-      ffMajor,
-      ffFull,
-      isFirefox,
+      chromeMajor,
+      chromeFull,
+      isEdge,
+      edgeBuild,
       osId,
-      oscpu,
+      realSecChUa,
+      realBrands,
       ua
     };
   }
@@ -100,80 +128,75 @@ window.GhostGenerator = (function () {
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 (0x00002882) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Ti (0x00002803) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 (0x00002786) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 (0x00002704) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'ultra' },
-    // AMD — Radeon RX
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 580 Series (0x000067DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
+    // AMD
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 580 (0x000067DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
     { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 5600 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6600 (0x000073FF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
     { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6600 XT (0x000073FF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
     { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6700 XT (0x000073DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
     { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7600 (0x00007480) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    // Intel — iGPU & Arc
+    // Intel
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00003EA0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
     { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004C8B) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 770 (0x00004680) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
     { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Arc(TM) A750 Graphics (0x00005691) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' }
   ];
 
   const GPU_MACOS = [
-    { v: 'Apple', r: 'Apple M1', t: 'mid' },
-    { v: 'Apple', r: 'Apple M1 Pro', t: 'high' },
-    { v: 'Apple', r: 'Apple M1 Max', t: 'ultra' },
-    { v: 'Apple', r: 'Apple M2', t: 'mid' },
-    { v: 'Apple', r: 'Apple M2 Pro', t: 'high' },
-    { v: 'Apple', r: 'Apple M2 Max', t: 'ultra' },
-    { v: 'Apple', r: 'Apple M3', t: 'high' },
-    { v: 'Apple', r: 'Apple M3 Pro', t: 'high' },
-    { v: 'Apple', r: 'Apple M3 Max', t: 'ultra' },
-    { v: 'Apple', r: 'Apple M4', t: 'high' },
-    { v: 'Apple', r: 'Apple M4 Pro', t: 'ultra' }
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)', t: 'mid' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)', t: 'high' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)', t: 'mid' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)', t: 'high' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M3, Unspecified Version)', t: 'mid' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M3 Pro, Unspecified Version)', t: 'high' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)', t: 'high' }
   ];
 
-  const GPU_POOLS = {
-    windows: GPU_WINDOWS,
-    macos: GPU_MACOS,
-    linux: GPU_WINDOWS
-  };
+  const GPU_LINUX = [
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) UHD Graphics 630 (CFL GT2), OpenGL ES 3.2)', t: 'low' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Iris(R) Xe Graphics (TGL GT2), OpenGL ES 3.2)', t: 'mid' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650/PCIe/SSE2, OpenGL ES 3.2)', t: 'mid' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060/PCIe/SSE2, OpenGL ES 3.2)', t: 'mid' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 580 (radeonsi, polaris10, LLVM 15.0.7, DRM 3.49, 6.1.0), OpenGL ES 3.2)', t: 'low' }
+  ];
 
-  /* ── Hardware Tiers ──────────────────────────────────── */
-  const HW_TIERS = {
-    low:   { cores: [4, 6],       mem: [4, 8],        colorDepth: [24] },
-    mid:   { cores: [6, 8, 12],   mem: [8, 16],       colorDepth: [24] },
-    high:  { cores: [8, 12, 16],  mem: [16, 32],      colorDepth: [24] },
-    ultra: { cores: [12, 16, 24], mem: [32, 64],      colorDepth: [24] }
-  };
+  const GPU_POOLS = { windows: GPU_WINDOWS, macos: GPU_MACOS, linux: GPU_LINUX };
 
-  const HW_MACOS = {
-    mid:   { cores: [8],          mem: [8, 16],       colorDepth: [24, 30] },
-    high:  { cores: [10, 12],     mem: [16, 18, 36],  colorDepth: [24, 30] },
-    ultra: { cores: [12, 14, 16], mem: [32, 64, 128], colorDepth: [24, 30] }
-  };
-
-  /* ── Screen Pools ────────────────────────────────────── */
+  /* ── Screen Resolutions ──────────────────────────────── */
   const SCREENS = [
-    { w: 1920, h: 1080 },
-    { w: 2560, h: 1440 },
     { w: 1366, h: 768 },
-    { w: 1536, h: 864 },
     { w: 1440, h: 900 },
+    { w: 1536, h: 864 },
     { w: 1600, h: 900 },
+    { w: 1680, h: 1050 },
+    { w: 1920, h: 1080 },
+    { w: 1920, h: 1200 },
     { w: 2560, h: 1080 },
-    { w: 3440, h: 1440 },
-    { w: 3840, h: 2160 },
+    { w: 2560, h: 1440 },
+    { w: 3840, h: 2160 }
   ];
 
   const SCREENS_MACOS = [
     { w: 1440, h: 900 },
-    { w: 1680, h: 1050 },
-    { w: 1728, h: 1117 },
     { w: 1512, h: 982 },
-    { w: 2560, h: 1440 },
+    { w: 1728, h: 1117 },
     { w: 2560, h: 1600 },
+    { w: 1920, h: 1080 },
+    { w: 2560, h: 1440 }
   ];
 
-  /* ── Timezones Database (118 Worldwide Zones) ────────── */
+  /* ── Hardware Tiers ──────────────────────────────────── */
+  const HW_TIERS = {
+    low:  { cores: [2, 4, 4, 6],     mem: [4, 4, 8],         colorDepth: [24] },
+    mid:  { cores: [4, 6, 8, 8],     mem: [8, 8, 16],        colorDepth: [24, 24, 30] },
+    high: { cores: [8, 10, 12, 16],  mem: [16, 16, 32, 32],  colorDepth: [24, 30] }
+  };
+
+  const HW_MACOS = {
+    low:  { cores: [8],              mem: [8],               colorDepth: [30] },
+    mid:  { cores: [8, 8, 10],       mem: [8, 16],           colorDepth: [30] },
+    high: { cores: [10, 12, 12, 14], mem: [16, 24, 32, 36],  colorDepth: [30] }
+  };
+
+  /* ── Timezones (ALL major IANA zones, grouped by region) ── */
   const TIMEZONES = [
     // ── Asia ──
     { tz: 'Asia/Jakarta',          offset: -420, region: 'Asia' },
@@ -182,78 +205,89 @@ window.GhostGenerator = (function () {
     { tz: 'Asia/Singapore',        offset: -480, region: 'Asia' },
     { tz: 'Asia/Kuala_Lumpur',     offset: -480, region: 'Asia' },
     { tz: 'Asia/Bangkok',          offset: -420, region: 'Asia' },
+    { tz: 'Asia/Ho_Chi_Minh',      offset: -420, region: 'Asia' },
+    { tz: 'Asia/Manila',           offset: -480, region: 'Asia' },
     { tz: 'Asia/Tokyo',            offset: -540, region: 'Asia' },
     { tz: 'Asia/Seoul',            offset: -540, region: 'Asia' },
     { tz: 'Asia/Shanghai',         offset: -480, region: 'Asia' },
     { tz: 'Asia/Hong_Kong',        offset: -480, region: 'Asia' },
     { tz: 'Asia/Taipei',           offset: -480, region: 'Asia' },
-    { tz: 'Asia/Manila',           offset: -480, region: 'Asia' },
-    { tz: 'Asia/Ho_Chi_Minh',      offset: -420, region: 'Asia' },
-    { tz: 'Asia/Phnom_Penh',       offset: -420, region: 'Asia' },
-    { tz: 'Asia/Yangon',           offset: -390, region: 'Asia' },
-    { tz: 'Asia/Dhaka',            offset: -360, region: 'Asia' },
     { tz: 'Asia/Kolkata',          offset: -330, region: 'Asia' },
     { tz: 'Asia/Colombo',          offset: -330, region: 'Asia' },
-    { tz: 'Asia/Kathmandu',        offset: -345, region: 'Asia' },
+    { tz: 'Asia/Dhaka',            offset: -360, region: 'Asia' },
     { tz: 'Asia/Karachi',          offset: -300, region: 'Asia' },
+    { tz: 'Asia/Kathmandu',        offset: -345, region: 'Asia' },
+    { tz: 'Asia/Yangon',           offset: -390, region: 'Asia' },
+    { tz: 'Asia/Almaty',           offset: -360, region: 'Asia' },
     { tz: 'Asia/Tashkent',         offset: -300, region: 'Asia' },
-    { tz: 'Asia/Almaty',           offset: -300, region: 'Asia' },
     { tz: 'Asia/Dubai',            offset: -240, region: 'Asia' },
+    { tz: 'Asia/Muscat',           offset: -240, region: 'Asia' },
     { tz: 'Asia/Riyadh',           offset: -180, region: 'Asia' },
     { tz: 'Asia/Qatar',            offset: -180, region: 'Asia' },
     { tz: 'Asia/Kuwait',           offset: -180, region: 'Asia' },
     { tz: 'Asia/Baghdad',          offset: -180, region: 'Asia' },
     { tz: 'Asia/Tehran',           offset: -210, region: 'Asia' },
-    { tz: 'Asia/Jerusalem',        offset: -120, region: 'Asia' },
     { tz: 'Asia/Beirut',           offset: -120, region: 'Asia' },
+    { tz: 'Asia/Jerusalem',        offset: -120, region: 'Asia' },
     { tz: 'Asia/Amman',            offset: -180, region: 'Asia' },
     { tz: 'Asia/Baku',             offset: -240, region: 'Asia' },
     { tz: 'Asia/Tbilisi',          offset: -240, region: 'Asia' },
     { tz: 'Asia/Yerevan',          offset: -240, region: 'Asia' },
+    { tz: 'Asia/Vladivostok',      offset: -600, region: 'Asia' },
+    { tz: 'Asia/Novosibirsk',      offset: -420, region: 'Asia' },
+    { tz: 'Asia/Krasnoyarsk',      offset: -420, region: 'Asia' },
+    { tz: 'Asia/Irkutsk',          offset: -480, region: 'Asia' },
+    { tz: 'Asia/Kamchatka',        offset: -720, region: 'Asia' },
     // ── America ──
-    { tz: 'America/New_York',       offset: 300,  region: 'America' },
-    { tz: 'America/Chicago',        offset: 360,  region: 'America' },
-    { tz: 'America/Denver',         offset: 420,  region: 'America' },
-    { tz: 'America/Los_Angeles',    offset: 480,  region: 'America' },
-    { tz: 'America/Anchorage',      offset: 540,  region: 'America' },
-    { tz: 'America/Toronto',        offset: 300,  region: 'America' },
-    { tz: 'America/Vancouver',      offset: 480,  region: 'America' },
-    { tz: 'America/Montreal',       offset: 300,  region: 'America' },
-    { tz: 'America/Halifax',        offset: 240,  region: 'America' },
-    { tz: 'America/Mexico_City',    offset: 360,  region: 'America' },
-    { tz: 'America/Bogota',         offset: 300,  region: 'America' },
-    { tz: 'America/Lima',           offset: 300,  region: 'America' },
-    { tz: 'America/Santiago',       offset: 240,  region: 'America' },
-    { tz: 'America/Buenos_Aires',   offset: 180,  region: 'America' },
-    { tz: 'America/Sao_Paulo',      offset: 180,  region: 'America' },
-    { tz: 'America/Caracas',        offset: 240,  region: 'America' },
-    { tz: 'America/Panama',         offset: 300,  region: 'America' },
-    { tz: 'America/Costa_Rica',     offset: 360,  region: 'America' },
-    { tz: 'America/Guatemala',      offset: 360,  region: 'America' },
-    { tz: 'America/Havana',         offset: 300,  region: 'America' },
-    { tz: 'America/Santo_Domingo',  offset: 240,  region: 'America' },
-    { tz: 'America/Puerto_Rico',    offset: 240,  region: 'America' },
-    { tz: 'America/Montevideo',     offset: 180,  region: 'America' },
-    { tz: 'America/Asuncion',       offset: 240,  region: 'America' },
-    { tz: 'America/La_Paz',         offset: 240,  region: 'America' },
+    { tz: 'America/New_York',      offset: 300,  region: 'America' },
+    { tz: 'America/Chicago',       offset: 360,  region: 'America' },
+    { tz: 'America/Denver',        offset: 420,  region: 'America' },
+    { tz: 'America/Los_Angeles',   offset: 480,  region: 'America' },
+    { tz: 'America/Anchorage',     offset: 540,  region: 'America' },
+    { tz: 'America/Phoenix',       offset: 420,  region: 'America' },
+    { tz: 'America/Toronto',       offset: 300,  region: 'America' },
+    { tz: 'America/Vancouver',     offset: 480,  region: 'America' },
+    { tz: 'America/Edmonton',      offset: 420,  region: 'America' },
+    { tz: 'America/Winnipeg',      offset: 360,  region: 'America' },
+    { tz: 'America/Halifax',       offset: 240,  region: 'America' },
+    { tz: 'America/St_Johns',      offset: 210,  region: 'America' },
+    { tz: 'America/Mexico_City',   offset: 360,  region: 'America' },
+    { tz: 'America/Cancun',        offset: 300,  region: 'America' },
+    { tz: 'America/Bogota',        offset: 300,  region: 'America' },
+    { tz: 'America/Lima',          offset: 300,  region: 'America' },
+    { tz: 'America/Santiago',      offset: 240,  region: 'America' },
+    { tz: 'America/Buenos_Aires',  offset: 180,  region: 'America' },
+    { tz: 'America/Sao_Paulo',     offset: 180,  region: 'America' },
+    { tz: 'America/Caracas',       offset: 240,  region: 'America' },
+    { tz: 'America/Guayaquil',     offset: 300,  region: 'America' },
+    { tz: 'America/Montevideo',    offset: 180,  region: 'America' },
+    { tz: 'America/Asuncion',      offset: 240,  region: 'America' },
+    { tz: 'America/La_Paz',        offset: 240,  region: 'America' },
+    { tz: 'America/Panama',        offset: 300,  region: 'America' },
+    { tz: 'America/Costa_Rica',    offset: 360,  region: 'America' },
+    { tz: 'America/Guatemala',     offset: 360,  region: 'America' },
+    { tz: 'America/Havana',        offset: 300,  region: 'America' },
+    { tz: 'America/Jamaica',       offset: 300,  region: 'America' },
+    { tz: 'America/Puerto_Rico',   offset: 240,  region: 'America' },
     // ── Europe ──
-    { tz: 'Europe/London',          offset: 0,    region: 'Europe' },
-    { tz: 'Europe/Dublin',          offset: 0,    region: 'Europe' },
-    { tz: 'Europe/Paris',           offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Berlin',          offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Rome',            offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Madrid',          offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Amsterdam',       offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Brussels',        offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Vienna',          offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Zurich',          offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Stockholm',       offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Oslo',            offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Copenhagen',      offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Helsinki',        offset: -120, region: 'Europe' },
-    { tz: 'Europe/Warsaw',          offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Prague',          offset: -60,  region: 'Europe' },
-    { tz: 'Europe/Budapest',        offset: -60,  region: 'Europe' },
+    { tz: 'Europe/London',         offset: 0,    region: 'Europe' },
+    { tz: 'Europe/Dublin',         offset: 0,    region: 'Europe' },
+    { tz: 'Europe/Lisbon',         offset: 0,    region: 'Europe' },
+    { tz: 'Europe/Paris',          offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Berlin',         offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Amsterdam',      offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Brussels',       offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Madrid',         offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Rome',           offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Zurich',         offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Vienna',         offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Stockholm',      offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Oslo',           offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Copenhagen',     offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Helsinki',       offset: -120, region: 'Europe' },
+    { tz: 'Europe/Warsaw',         offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Prague',         offset: -60,  region: 'Europe' },
+    { tz: 'Europe/Budapest',       offset: -60,  region: 'Europe' },
     { tz: 'Europe/Bucharest',      offset: -120, region: 'Europe' },
     { tz: 'Europe/Athens',         offset: -120, region: 'Europe' },
     { tz: 'Europe/Istanbul',       offset: -180, region: 'Europe' },
@@ -290,7 +324,7 @@ window.GhostGenerator = (function () {
     { tz: 'Indian/Mauritius',      offset: -240, region: 'Indian' },
   ];
 
-  /* ── Language Presets Database (46 Top Worldwide Browser Locales) ── */
+  /* ── Language Presets Database (40+ Top Worldwide Browser Locales) ── */
   const LANGUAGES = [
     // ── Americas ──
     { code: 'en-US', name: 'English (US)',         native: 'English (US)',          tags: ['en-US', 'en'],                  region: 'Americas' },
@@ -347,6 +381,30 @@ window.GhostGenerator = (function () {
     { code: 'af-ZA', name: 'Afrikaans',            native: 'Afrikaans',             tags: ['af-ZA', 'af', 'en-US', 'en'],   region: 'Africa' }
   ];
 
+
+  /* ── Language Sets ───────────────────────────────────── */
+  const LANGUAGE_SETS = [
+    ['en-US', 'en'],
+    ['en-US', 'en', 'id'],
+    ['en-GB', 'en'],
+    ['id-ID', 'id', 'en-US', 'en'],
+    ['id-ID', 'id', 'en'],
+    ['de-DE', 'de', 'en-US', 'en'],
+    ['fr-FR', 'fr', 'en'],
+    ['es-ES', 'es', 'en'],
+    ['pt-BR', 'pt', 'en'],
+    ['ja-JP', 'ja', 'en'],
+    ['ko-KR', 'ko', 'en'],
+    ['zh-CN', 'zh', 'en'],
+    ['th-TH', 'th', 'en'],
+    ['vi-VN', 'vi', 'en'],
+    ['ru-RU', 'ru', 'en'],
+    ['nl-NL', 'nl', 'en'],
+    ['it-IT', 'it', 'en'],
+    ['pl-PL', 'pl', 'en'],
+    ['tr-TR', 'tr', 'en']
+  ];
+
   /* ── Media Device Templates ──────────────────────────── */
   function generateMediaDevices() {
     const devices = [];
@@ -374,7 +432,7 @@ window.GhostGenerator = (function () {
   };
 
   /* ══════════════════════════════════════════════════════
-   * PROFILE GENERATOR (FIREFOX STEALTH MODE)
+   * PROFILE GENERATOR (STEALTH MODE)
    * ══════════════════════════════════════════════════════ */
   function generate(options = {}) {
     const real = detectRealBrowser();
@@ -401,7 +459,7 @@ window.GhostGenerator = (function () {
     let tz;
     if (options.fixedTimezone) {
       tz = TIMEZONES.find(t => t.tz === options.fixedTimezone);
-      if (!tz) tz = pick(TIMEZONES);
+      if (!tz) tz = pick(TIMEZONES); // fallback if not found
     } else {
       tz = pick(TIMEZONES);
     }
@@ -441,29 +499,29 @@ window.GhostGenerator = (function () {
       gpu.r.match(/Apple (\S+ ?\S*)/)?.[1] || 'Apple GPU' :
       gpu.r.match(/(?:GeForce|Radeon|Iris|UHD|Arc).*?(?=\s*\(0x|\s*Direct|\s*,\s*Open)/)?.[0]?.trim() || 'GPU';
 
-    const label = `${real.isFirefox ? 'Firefox' : 'Browser'} ${real.ffMajor} · ${real.osId.toUpperCase()} · ${gpuShort}`;
+    const label = `${real.isEdge ? 'Edge' : 'Chrome'} ${real.chromeMajor} · ${real.osId.toUpperCase()} · ${gpuShort}`;
 
     // ══════════════════════════════════════════════════════
-    // COMPOSE PROFILE — Firefox standard structure
+    // COMPOSE PROFILE — UA/version stays REAL, rest spoofed
     // ══════════════════════════════════════════════════════
     const p = {
       // ── Mode indicator ──
       stealthMode: true,
-      browserEngine: 'gecko',
 
-      // ── Navigator (version = REAL Firefox, hardware = spoofed) ──
+      // ── Navigator (version = REAL, hardware = spoofed) ──
       userAgent: real.ua,                 // KEEP REAL!
       appVersion: real.ua.replace('Mozilla/', ''),
       platform: navigator.platform,       // KEEP REAL!
-      vendor: '',                         // Firefox standard is empty string!
-      oscpu: real.oscpu,                  // Firefox oscpu string
+      vendor: 'Google Inc.',
+      oscpu: undefined,
       languages: langs,
       hardwareConcurrency: cores,         // SPOOFED
       deviceMemory: mem,                  // SPOOFED
-      maxTouchPoints: navigator.maxTouchPoints || 0,
+      maxTouchPoints: navigator.maxTouchPoints || 0,  // KEEP REAL!
       doNotTrack,
 
-      // ── Client Hints (Firefox omits Client Hints) ──
+      // ── Client Hints — ALL REAL (no header override) ──
+      // Set to null to signal background.js: DON'T modify headers
       chUA: null,
       chUAMobile: null,
       chUAPlatform: null,
@@ -472,6 +530,18 @@ window.GhostGenerator = (function () {
       chUABitness: null,
       chUAFullVersionList: null,
       chUAModel: null,
+
+      // ── Client Hints JS API — not overridden ──
+      // (inject.js will skip ua spoofing when stealthMode = true)
+      uaDataBrands: null,
+      uaDataFullVersionList: null,
+      uaDataPlatform: null,
+      uaDataPlatformVersion: null,
+      uaDataArchitecture: null,
+      uaDataBitness: null,
+      uaDataModel: null,
+      uaDataMobile: null,
+      uaDataWow64: null,
 
       // ── Screen (SPOOFED) ──
       screenWidth: scr.w,
@@ -529,3 +599,4 @@ window.GhostGenerator = (function () {
 
   return { generate, TIMEZONES, LANGUAGES };
 })();
+

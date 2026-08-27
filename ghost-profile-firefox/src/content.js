@@ -1,18 +1,20 @@
 /**
- * Ghost Profile (Firefox) — content.js
+ * Ghost Profile — content.js
  * ═══════════════════════════════════════════════════════════════
  * Runs in ISOLATED world at document_start.
- * 1. Synchronously reads profile config from storage
- * 2. Injects src/inject.js into page execution context
- * 3. Uses stealth CustomEvents to bridge payload & profile updates
+ * Bridges chrome.storage → inject.js (MAIN world) by passing
+ * the FULL generated profile object.
+ * Uses stealth CustomEvents to prevent window.postMessage sniffing.
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
   'use strict';
 
-  const api = (typeof browser !== 'undefined') ? browser : chrome;
+  // L6: Must match obfuscated names in inject.js
+  const _EVT_PROFILE = '\x5f_' + String.fromCharCode(71, 80) + '_P' + '\x55__';
+  const _EVT_HAR     = '\x5f_' + String.fromCharCode(71, 80) + '_H' + '\x52__';
 
-  api.storage.local.get(['generatedProfile', 'features', 'enabled'], (data) => {
+  chrome.storage.local.get(['generatedProfile', 'features', 'enabled'], (data) => {
     if (data.enabled === false) return;
 
     const config = {
@@ -24,24 +26,14 @@
       }
     };
 
-    // Method 1: data attribute (synchronous, read by inject.js before page scripts run)
+    // Method 1: data attribute (synchronous, read before inject.js executes)
     try {
       document.documentElement.setAttribute('data-gp-cfg', JSON.stringify(config));
     } catch (_) {}
 
-    // Method 2: Dynamic script injection for Firefox page context execution
+    // Method 2: Private CustomEvent (synchronous, no postMessage leak to page scripts)
     try {
-      const scriptUrl = api.runtime.getURL('src/inject.js');
-      const script = document.createElement('script');
-      script.src = scriptUrl;
-      script.async = false;
-      (document.head || document.documentElement).appendChild(script);
-      script.remove();
-    } catch (_) {}
-
-    // Method 3: Private CustomEvent (synchronous, no postMessage leak to page scripts)
-    try {
-      document.dispatchEvent(new CustomEvent('__GP_PROF_UPDATE__', {
+      document.dispatchEvent(new CustomEvent(_EVT_PROFILE, {
         detail: {
           fullProfile: config.fullProfile,
           features: config.features
@@ -51,10 +43,10 @@
   });
 
   // Listen for relay messages from inject.js via private CustomEvent
-  document.addEventListener('__GP_HAR_RELAY__', (e) => {
+  document.addEventListener(_EVT_HAR, (e) => {
     try {
       if (e && e.detail) {
-        api.runtime.sendMessage({
+        chrome.runtime.sendMessage({
           type: 'GHOST_HAR_RELAY_PAYLOAD',
           payload: e.detail
         }).catch(() => {});
@@ -62,14 +54,15 @@
     } catch (_) {}
   }, true);
 
-  // Listen for relay messages from background/popup
-  api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Listen for relay messages from popup/background
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === 'GHOST_UPDATE_PROFILE') {
       try {
-        document.dispatchEvent(new CustomEvent('__GP_PROF_UPDATE__', {
+        document.dispatchEvent(new CustomEvent(_EVT_PROFILE, {
           detail: {
             fullProfile: msg.fullProfile || null,
-            features: msg.features
+            features: msg.features,
+            harRecording: msg.harRecording
           }
         }));
       } catch (_) {}

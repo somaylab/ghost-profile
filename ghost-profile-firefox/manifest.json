@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ghost Profile",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "description": "Stealth fingerprint spoofing for Firefox — changes what you look like, not who you are",
   "browser_specific_settings": {
     "gecko": {

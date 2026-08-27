@@ -10,6 +10,10 @@
 (function () {
   'use strict';
 
+  // L6: Must match obfuscated names in inject.js
+  const _EVT_PROFILE = '\x5f_' + String.fromCharCode(71, 80) + '_P' + '\x55__';
+  const _EVT_HAR     = '\x5f_' + String.fromCharCode(71, 80) + '_H' + '\x52__';
+
   chrome.storage.local.get(['generatedProfile', 'features', 'enabled'], (data) => {
     if (data.enabled === false) return;
 
@@ -29,7 +33,7 @@
 
     // Method 2: Private CustomEvent (synchronous, no postMessage leak to page scripts)
     try {
-      document.dispatchEvent(new CustomEvent('__GP_PROF_UPDATE__', {
+      document.dispatchEvent(new CustomEvent(_EVT_PROFILE, {
         detail: {
           fullProfile: config.fullProfile,
           features: config.features
@@ -39,7 +43,7 @@
   });
 
   // Listen for relay messages from inject.js via private CustomEvent
-  document.addEventListener('__GP_HAR_RELAY__', (e) => {
+  document.addEventListener(_EVT_HAR, (e) => {
     try {
       if (e && e.detail) {
         chrome.runtime.sendMessage({
@@ -54,10 +58,11 @@
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.type === 'GHOST_UPDATE_PROFILE') {
       try {
-        document.dispatchEvent(new CustomEvent('__GP_PROF_UPDATE__', {
+        document.dispatchEvent(new CustomEvent(_EVT_PROFILE, {
           detail: {
             fullProfile: msg.fullProfile || null,
-            features: msg.features
+            features: msg.features,
+            harRecording: msg.harRecording
           }
         }));
       } catch (_) {}

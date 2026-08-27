@@ -36,7 +36,16 @@ window.GhostGenerator = (function () {
   /* ── Utility ─────────────────────────────────────────── */
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-  const hexId = (len) => Array.from({ length: len }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  // L9: Use crypto.getRandomValues for better entropy in device IDs
+  const hexId = (len) => {
+    try {
+      const bytes = new Uint8Array(Math.ceil(len / 2));
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').substring(0, len);
+    } catch (_) {
+      return Array.from({ length: len }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    }
+  };
 
   /* ══════════════════════════════════════════════════════
    * REAL BROWSER DETECTION
