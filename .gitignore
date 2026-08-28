@@ -1,8 +1,0 @@
-# Ignore sensitive token and large har capture files
-*.har
-token-personal.txt
-*.zip
-adobe-profile.json
-.DS_Store
-Thumbs.db
-
