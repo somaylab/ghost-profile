@@ -116,7 +116,7 @@ window.GhostGenerator = (function () {
     // ── NVIDIA GeForce GTX (Turing/Pascal) ──
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1050 Ti (0x00001C82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1060 6GB (0x00001C20) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 (0x00001F82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 (0x00001F82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 SUPER (0x00002187) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER (0x000021C4) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 Ti (0x00002182) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
@@ -185,7 +185,7 @@ window.GhostGenerator = (function () {
     { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) UHD Graphics 770 (ADL-S GT1), OpenGL ES 3.2)', t: 'low' },
     { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Iris(R) Xe Graphics (TGL GT2), OpenGL ES 3.2)', t: 'mid' },
     { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Arc(TM) A770 Graphics (DG2), OpenGL ES 3.2)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650/PCIe/SSE2, OpenGL ES 3.2)', t: 'mid' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650/PCIe/SSE2, OpenGL ES 3.2)', t: 'low' },
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060/PCIe/SSE2, OpenGL ES 3.2)', t: 'mid' },
     { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070/PCIe/SSE2, OpenGL ES 3.2)', t: 'high' },
     { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 580 (radeonsi, polaris10, LLVM 15.0.7, DRM 3.49, 6.1.0), OpenGL ES 3.2)', t: 'low' },
@@ -194,46 +194,70 @@ window.GhostGenerator = (function () {
 
   const GPU_POOLS = { windows: GPU_WINDOWS, macos: GPU_MACOS, linux: GPU_LINUX };
 
-  /* ── Screen Resolutions (StatCounter 2025 top desktop) ──────────── */
-  const SCREENS = [
-    { w: 1366, h: 768 },
-    { w: 1440, h: 900 },
-    { w: 1536, h: 864 },
-    { w: 1600, h: 900 },
-    { w: 1680, h: 1050 },
-    { w: 1920, h: 1080 },
-    { w: 1920, h: 1200 },
-    { w: 2560, h: 1080 },
-    { w: 2560, h: 1440 },
-    { w: 2560, h: 1600 },
-    { w: 2880, h: 1800 },
-    { w: 3440, h: 1440 },
-    { w: 3840, h: 2160 }
-  ];
+  /* ── Screen Resolution Pools Categorized by Hardware Tier (100% Market-Accurate Displays) ── */
+  const SCREENS_BY_TIER = {
+    low: [
+      { w: 1366, h: 768,  dpr: [1] },         // 16:9 HD 14"/15.6" budget laptop
+      { w: 1440, h: 900,  dpr: [1] },         // 16:10 19" desktop monitor
+      { w: 1536, h: 864,  dpr: [1, 1.25] },   // 16:9 1080p scaled at 125% in Windows
+      { w: 1600, h: 900,  dpr: [1] },         // 16:9 HD+ 20" office monitor
+      { w: 1680, h: 1050, dpr: [1] },         // 16:10 WSXGA+ 22" monitor
+      { w: 1920, h: 1080, dpr: [1, 1.25] },   // 16:9 Full HD 21.5"-24" monitor (Steam #1)
+      { w: 1920, h: 1200, dpr: [1, 1.25] }    // 16:10 WUXGA 14"/16" office laptop
+    ],
+    mid: [
+      { w: 1920, h: 1080, dpr: [1, 1.25] },       // 16:9 Full HD 1080p 24"-27" gaming monitor
+      { w: 1920, h: 1200, dpr: [1, 1.25] },       // 16:10 WUXGA 16" productivity laptop
+      { w: 2560, h: 1080, dpr: [1] },             // 21:9 Ultrawide 29"-34" monitor
+      { w: 2560, h: 1440, dpr: [1, 1.25] },       // 16:9 2K QHD 27" mainstream monitor
+      { w: 2560, h: 1600, dpr: [1, 1.25, 1.5] }   // 16:10 QHD+ 16" gaming laptop (Legion, ROG)
+    ],
+    high: [
+      { w: 1920, h: 1080, dpr: [1] },             // 16:9 FHD High-Refresh eSports 240Hz/360Hz monitor
+      { w: 2560, h: 1440, dpr: [1, 1.25] },       // 16:9 2K QHD 27" 165Hz/240Hz gaming monitor
+      { w: 2560, h: 1600, dpr: [1, 1.25, 1.5] },  // 16:10 QHD+ creator/gaming laptop
+      { w: 2880, h: 1800, dpr: [1.5, 2] },        // 16:10 3K OLED laptop (ASUS Zenbook, XPS)
+      { w: 3440, h: 1440, dpr: [1, 1.25] },       // 21:9 UWQHD 34" curved ultrawide monitor
+      { w: 3840, h: 2160, dpr: [1.5, 2] },        // 16:9 4K UHD 27"/32" enthusiast monitor
+      { w: 5120, h: 1440, dpr: [1] }              // 32:9 Super Ultrawide 49" monitor (Samsung G9)
+    ]
+  };
 
-  const SCREENS_MACOS = [
-    { w: 1440, h: 900 },
-    { w: 1512, h: 982 },
-    { w: 1728, h: 1117 },
-    { w: 1800, h: 1169 },
-    { w: 1920, h: 1080 },
-    { w: 2560, h: 1440 },
-    { w: 2560, h: 1600 },
-    { w: 3024, h: 1964 },
-    { w: 3456, h: 2234 }
-  ];
+  const SCREENS_MACOS_BY_TIER = {
+    low: [
+      { w: 1440, h: 900,  dpr: [2] },   // 13.3" MacBook Air standard scaled
+      { w: 1512, h: 982,  dpr: [2] },   // 13.6" M2/M3 Air default desktop viewport
+      { w: 1920, h: 1080, dpr: [1, 2] },// 1080p external display
+      { w: 2560, h: 1440, dpr: [1, 2] } // 1440p external display
+    ],
+    mid: [
+      { w: 1512, h: 982,  dpr: [2] },   // 14" MacBook Pro default viewport
+      { w: 1728, h: 1117, dpr: [2] },   // 15" MacBook Air / 16" MacBook Pro default viewport
+      { w: 1800, h: 1169, dpr: [2] },   // 15.3" MacBook Air scaled
+      { w: 2560, h: 1440, dpr: [1, 2] },// 27" Apple Studio Display scaled
+      { w: 2560, h: 1600, dpr: [2] }    // 13.3" MacBook Pro Retina
+    ],
+    high: [
+      { w: 1512, h: 982,  dpr: [2] },   // 14" MacBook Pro Retina viewport
+      { w: 1728, h: 1117, dpr: [2] },   // 16" MacBook Pro Retina viewport
+      { w: 2560, h: 1440, dpr: [2] },   // Apple Studio Display 2K scaled
+      { w: 3024, h: 1964, dpr: [2] },   // 14" MacBook Pro Native Panel
+      { w: 3456, h: 2234, dpr: [2] },   // 16" MacBook Pro Native Panel
+      { w: 5120, h: 2880, dpr: [2] }    // 5K Apple Studio Display / iMac 27"
+    ]
+  };
 
-  /* ── Hardware Tiers (Intel 12-14th gen, Ryzen 5000-9000, Apple M-series) ── */
+  /* ── Hardware Tiers (RAM, CPU Cores, Color Depth correlated with GPU tier) ── */
   const HW_TIERS = {
-    low:  { cores: [2, 4, 4, 4, 6],           mem: [4, 4, 8],                    colorDepth: [24] },
-    mid:  { cores: [4, 6, 6, 8, 8, 10, 12],   mem: [8, 8, 16, 16],               colorDepth: [24, 24, 30] },
-    high: { cores: [8, 10, 12, 14, 16, 20, 24], mem: [16, 16, 32, 32, 64],        colorDepth: [24, 30] }
+    low:  { cores: [4, 4, 6, 6, 8],                mem: [4, 4, 8, 8, 16],               colorDepth: [24] },
+    mid:  { cores: [6, 6, 8, 8, 12, 12, 16],        mem: [8, 16, 16, 16, 32],            colorDepth: [24, 24, 30] },
+    high: { cores: [8, 8, 12, 16, 16, 20, 24, 32], mem: [16, 32, 32, 32, 64],          colorDepth: [24, 30] }
   };
 
   const HW_MACOS = {
-    low:  { cores: [8],                       mem: [8, 16],                      colorDepth: [30] },
-    mid:  { cores: [8, 8, 10, 10, 12],        mem: [8, 16, 18, 24],              colorDepth: [30] },
-    high: { cores: [10, 12, 12, 14, 16],      mem: [16, 24, 32, 36, 48, 64, 128], colorDepth: [30] }
+    low:  { cores: [8],                            mem: [8, 16],                        colorDepth: [30] },
+    mid:  { cores: [8, 10, 11, 12],                mem: [16, 18, 24],                   colorDepth: [30] },
+    high: { cores: [12, 14, 16, 24],               mem: [32, 36, 48, 64, 96, 128],      colorDepth: [30] }
   };
 
   /* ── Timezones (ALL major IANA zones, grouped by region) ── */
@@ -481,18 +505,21 @@ window.GhostGenerator = (function () {
     // ── GPU (randomized) ──
     const gpuPool = GPU_POOLS[osInfo.gpuPool];
     const gpu = pick(gpuPool);
+    const tier = gpu.t || 'mid';
 
     // ── Hardware matching GPU tier ──
     const hwTable = real.osId === 'macos' ? HW_MACOS : HW_TIERS;
-    const hw = hwTable[gpu.t] || hwTable.mid;
+    const hw = hwTable[tier] || hwTable.mid;
     const cores = pick(hw.cores);
     const mem = pick(hw.mem);
     const colorDepth = pick(hw.colorDepth);
 
-    // ── Screen (randomized) ──
-    const screenPool = osInfo.screenPool === 'macos' ? SCREENS_MACOS : SCREENS;
-    const scr = pick(screenPool);
-    const dpr = pick(osInfo.dprOptions);
+    // ── Screen & DPR matching GPU & OS tier (100% realistic market pairings) ──
+    const screenTable = real.osId === 'macos' ? SCREENS_MACOS_BY_TIER : SCREENS_BY_TIER;
+    const screenPool = screenTable[tier] || screenTable.mid;
+    const scrObj = pick(screenPool);
+    const scr = { w: scrObj.w, h: scrObj.h };
+    const dpr = pick(scrObj.dpr);
     const availH = scr.h - osInfo.taskbarH;
 
     // ── Timezone (fixed or randomized) ──

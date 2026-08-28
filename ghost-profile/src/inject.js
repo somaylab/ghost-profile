@@ -427,11 +427,14 @@
 
     function getGpuTier() {
       const r = P.webglRenderer || '';
-      if (r.includes('RTX 4') || r.includes('RTX 3070') || r.includes('RTX 3060 Ti') ||
-          r.includes('RTX 2070') || r.includes('RX 6700') || r.includes('M1 Pro') ||
-          r.includes('M2 Pro') || r.includes('M3 Pro') || r.includes('M4')) return 'high';
-      if (r.includes('RTX') || r.includes('GTX 1650') || r.includes('GTX 1660') ||
-          r.includes('RX 5600') || r.includes('RX 6600') || r.includes('RX 7600') ||
+      if (r.includes('RTX 50') || r.includes('RTX 407') || r.includes('RTX 408') || r.includes('RTX 409') ||
+          r.includes('RTX 4060 Ti') || r.includes('RTX 307') || r.includes('RTX 308') || r.includes('RTX 309') ||
+          r.includes('RTX 3060 Ti') || r.includes('RTX 207') || r.includes('RTX 208') ||
+          r.includes('RX 6700') || r.includes('RX 7700') || r.includes('RX 7800') || r.includes('RX 7900') || r.includes('RX 9070') ||
+          r.includes('Arc(TM) A770') || r.includes('M1 Pro') || r.includes('M2 Pro') || r.includes('M3 Pro') || r.includes('M3 Max') || r.includes('M4')) return 'high';
+      if (r.includes('RTX 4060') || r.includes('RTX 3060') || r.includes('RTX 2060') ||
+          r.includes('GTX 1660') || r.includes('GTX 1650 SUPER') ||
+          r.includes('RX 5600') || r.includes('RX 6600') || r.includes('RX 6650') || r.includes('RX 7600') ||
           r.includes('Iris') || r.includes('M1') || r.includes('M2') || r.includes('M3')) return 'mid';
       return 'low';
     }
