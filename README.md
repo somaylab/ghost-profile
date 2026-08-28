@@ -95,11 +95,3 @@ graph TD
 * **Passive Traffic Capture**: Global network logger capturing requests across all active tabs, popups, and iframes without debugger infobars.
 * **Interaction Breadcrumbs**: Connects user clicks, form submissions, and DOM events directly to their corresponding API requests.
 * **Instant Export**: Export clean `.har` (HAR 1.2 compliant) and structured `.json` flow records with a single click.
-
----
-
-## ⚖️ License & Ethical Notice
-
-This project is licensed under the **MIT License**.
-
-> **Notice**: Ghost Profile is developed for authorized academic security research, defensive hardening, privacy preservation, and local laboratory testing. Ensure all testing activities comply with applicable laws and terms of service.
