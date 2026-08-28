@@ -7,7 +7,7 @@
 [![Anti-Bot Audit](https://img.shields.io/badge/Anti--Bot%20Audit-100%25%20Passed-brightgreen.svg)](#-forensic-audit--battle-tested-benchmarks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Ghost Profile v4.2.0** is an enterprise-grade client-side anti-fingerprinting and DOM prototype hardening engine for **Chromium** (Chrome, Brave, Edge, Opera) and **Mozilla Firefox** (Firefox, LibreWolf). Built specifically to eliminate prototype tampering artifacts and seamlessly bypass Tier-1 bot detection and anti-fraud engines (**ByteDance WebMSSDK/Slardar, Cloudflare Turnstile, DataDome, Kasada, and Akamai Bot Manager**) while preserving 100% native browser visual performance.
+> **Ghost Profile v4.2** is an enterprise-grade client-side anti-fingerprinting and DOM prototype hardening engine for **Chromium** (Chrome, Brave, Edge, Opera) and **Mozilla Firefox** (Firefox, LibreWolf). Built specifically to eliminate prototype tampering artifacts and seamlessly bypass Tier-1 bot detection and anti-fraud engines while preserving 100% native browser visual performance.
 
 ---
 
