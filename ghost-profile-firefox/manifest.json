@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Ghost Profile",
-  "version": "4.1.0",
-  "description": "Stealth fingerprint spoofing for Firefox — changes what you look like, not who you are",
+  "version": "4.2.0",
+  "description": "Enterprise anti-fingerprint and stealth DOM protection for Firefox — changes what you look like, not who you are",
   "browser_specific_settings": {
     "gecko": {
       "id": "ghost-profile@somay.security",

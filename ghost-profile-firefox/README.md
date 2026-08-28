@@ -1,28 +1,29 @@
-# 👻 Ghost Profile — Firefox Edition (v3.2.0)
+# 🦊 Ghost Profile — Mozilla Firefox Edition (v4.2.0)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](../LICENSE)
-[![Gecko MV3](https://img.shields.io/badge/Gecko-Manifest%20V3-orange.svg)](https://addons.mozilla.org/)
-[![Target](https://img.shields.io/badge/Target-Firefox%20%7C%20Dev%20Edition%20%7C%20LibreWolf-red.svg)](https://mozilla.org/firefox)
+[![Manifest V3](https://img.shields.io/badge/Gecko-Manifest%20V3-blue.svg)](https://extensionworkshop.com/documentation/develop/manifest-v3/)
+[![Target](https://img.shields.io/badge/Target-Firefox%20%7C%20Firefox%20Dev%20%7C%20LibreWolf-orange.svg)](https://mozilla.org/firefox)
+[![Audit](https://img.shields.io/badge/Anti--Bot%20Audit-100%25%20Passed-brightgreen.svg)](https://github.com/somaylab/ghost-profile/releases/tag/v4.2.0)
 
-> **Dedicated Mozilla Firefox Extension with Native Sidebar, Gecko Profile Generator & Global HAR / Flow Recorder**
+> **Enterprise-Grade Client-Side Anti-Fingerprinting Engine & Native Sidebar Console for Mozilla Firefox & LibreWolf**
 
 ---
 
-## 🛠️ Installation & Setup
+## 🛠️ Installation & Setup (Firefox)
 
-1. Open Mozilla Firefox or Firefox Developer Edition.
+1. Open **Mozilla Firefox**, **Firefox Developer Edition**, or **LibreWolf**.
 2. Navigate to `about:debugging#/runtime/this-firefox`.
-3. Click **Load Temporary Add-on...** under Temporary Extensions.
-4. Select `manifest.json` from this directory (`ghost-profile-firefox/`).
-5. Click the extension icon in the toolbar or press `Ctrl + B` (select Ghost Profile) to open the native **Sidebar**.
+3. Click **Load Temporary Add-on...**
+4. Select `manifest.json` located inside this `ghost-profile-firefox/` directory.
+5. Open the native **Firefox Sidebar** (`Ctrl + B` or click the Ghost Profile toolbar icon) to launch the Side Panel.
 
 ---
 
-## ⚡ Features Overview
+## ⚡ v4.2.0 Architectural Upgrades (Gecko Hardened)
 
-* **Dual-Tab Interface**: Switch seamlessly between **Identity & Spoofing** and **HAR & Flow Control**.
-* **Global HAR Interception**: Passively captures network activity across all open tabs and popup dialogs.
-* **Interaction Breadcrumbs**: Connects DOM clicks and form submissions directly to API requests.
-* **Gecko Engine Calibration**: Real `Firefox 135` User-Agent strings, clean empty string `navigator.vendor: ""`, `oscpu`, and platform architecture.
-* **Deterministic Noise Injection**: Mulberry32 PRNG for Canvas, WebGL, AudioContext, and Font measureText.
-* **100% Bilingual**: Instant English / Indonesian locale switching.
+* 🛡️ **Zero Own-Property Leak**: All spoofed getters (`innerWidth`, `deviceMemory`, `hardwareConcurrency`) reside cleanly on `Window.prototype` / `Navigator.prototype` / `Screen.prototype`.
+* 🎭 **Native Descriptor Masking**: Exact `fn.name` (`get [prop]`), `fn.length`, and `WeakMap` native string protection.
+* 🎨 **Smart Canvas Probe Isolation**: Canvas noise perturbation is strictly bounded to probe canvases (`<= 320x320`), keeping full-page graphics, WebGL viewports, and video players 100% crisp.
+* 🎮 **WebGL Spec Compliance**: Strict TypedArray compliance (`Int32Array` for `0x0D3A` `MAX_VIEWPORT_DIMS`).
+* 🌐 **Network Sync**: Dynamic `Accept-Language` header synchronization via `declarativeNetRequest`.
+* 📡 **Global HAR Interceptor**: Full multi-tab network traffic & DOM interaction recording.
