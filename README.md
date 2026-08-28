@@ -1,4 +1,4 @@
-# 👻 Ghost Profile — Enterprise Anti-Bot & DOM Hardening Engine (v4.2.0)
+# 👻 Ghost Profile — Enterprise Anti-Bot & DOM Hardening Engine (v4.2)
 
 [![Version](https://img.shields.io/badge/Version-v4.2.0-blue.svg)](https://github.com/somaylab/ghost-profile/releases/tag/v4.2.0)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-emerald.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
@@ -19,19 +19,6 @@ This repository provides two dedicated builds tailored for their respective brow
 | :--- | :--- | :--- | :--- |
 | **[`ghost-profile/`](./ghost-profile)** | **Google Chrome, Microsoft Edge, Brave, Opera** | Chrome Side Panel API (`manifest.json` MV3) | [ghost-profile-chromium-v4.2.0.zip](https://github.com/somaylab/ghost-profile/releases/download/v4.2.0/ghost-profile-chromium-v4.2.0.zip) |
 | **[`ghost-profile-firefox/`](./ghost-profile-firefox)** | **Mozilla Firefox, Firefox Dev, LibreWolf** | Firefox Sidebar Action API (`manifest.json` Gecko MV3) | [ghost-profile-firefox-v4.2.0.zip](https://github.com/somaylab/ghost-profile/releases/download/v4.2.0/ghost-profile-firefox-v4.2.0.zip) |
-
----
-
-## 🌟 What's New in v4.2.0
-
-* 🛡️ **Zero Own-Property Leak**: All spoofed properties (`innerWidth`, `deviceMemory`, `hardwareConcurrency`, etc.) are attached exclusively to prototype chains (`Window.prototype`, `Navigator.prototype`, `Screen.prototype`). `window.hasOwnProperty('innerWidth')` strictly returns `false`.
-* 🎭 **V8 / SpiderMonkey Native Descriptor Masking**: Enforced exact `fn.name` formatting (`"get " + prop` for getters, `prop` for methods) and exact `fn.length`. Native `Function.prototype.toString` interception is governed via `WeakMap`.
-* 🎨 **Smart Canvas Probe Isolation**: Canvas noise injection is strictly bounded to small probe canvases (`<= 320x320`). WebGL viewports, video editors, and high-resolution canvases remain 100% crystal-clear without visual distortion.
-* 🎮 **WebGL Spec Compliance**: `gl.getParameter(0x0D3A)` (`MAX_VIEWPORT_DIMS`) returns a standard `Int32Array` instead of `Float32Array`. High-end GPU tiering emulates authentic **NVIDIA GeForce RTX 4080 (0x00002704)** Direct3D11 ANGLE profiles.
-* 🔌 **Bidirectional Plugins & MimeTypes**: Standard Chromium/Firefox `PluginArray` / `MimeTypeArray` mapping where `plugin[0]` links to `MimeType` and `mimetype.enabledPlugin` links back to `plugin`.
-* 🌐 **Dynamic Header Synchronization**: Real-time synchronization of `Accept-Language` headers and `Sec-CH-UA-*` Client Hints via `declarativeNetRequest`.
-
----
 
 ## 🛡️ 13-Point Stealth Protection Matrix
 
@@ -77,23 +64,6 @@ graph TD
 | 11 | **Battery & Storage** | `BatteryManager`, `StorageManager` | Native desktop battery simulation and quota masking. |
 | 12 | **Date & Timezone** | `Date.prototype`, `Intl.DateTimeFormat` | Timezone offset and localized string formatting matching target locale. |
 | 13 | **HTTP Header Engine** | `declarativeNetRequest` | Network-layer `Accept-Language` and Client Hint synchronization. |
-
----
-
-## 📊 Forensic Audit & Battle-Tested Benchmarks
-
-Ghost Profile v4.2 was subjected to a full forensic HAR network audit against **CapCut Web & ByteDance Anti-Fraud Gateway (PIPO Checkout)**.
-
-| Metric | Result | Status |
-|---|---|---|
-| **Total Requests Audited** | **2,481 network entries** (265.6 MB HAR) | Complete Coverage |
-| **ByteDance WebMSSDK Anti-Bot** | **25 / 25 requests passed** (`errno: 200`, `errmsg: success`) | ✅ 100% Passed |
-| **Captcha Challenges** | **0 challenges triggered** | ✅ Zero Captcha |
-| **Anti-Bot Blocking (403 / 429)** | **0 requests blocked** | ✅ Zero Blocks |
-| **Telemetry Leakage** | 0 real hardware signals leaked in plaintext | ✅ Clean |
-| **Target Outcome** | **Free Trial Rp 0 Plan Unlocked** + PIPO Cashier Gateway Opened | ✅ Success |
-
----
 
 ## 🛠️ Installation & Setup
 
