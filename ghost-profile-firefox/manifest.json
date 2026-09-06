@@ -6,7 +6,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "ghost-profile@somay.security",
-      "strict_min_version": "109.0"
+      "strict_min_version": "128.0"
     }
   },
   "permissions": [
@@ -15,7 +15,6 @@
     "tabs",
     "scripting",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess",
     "webRequest",
     "webNavigation",
     "downloads"
@@ -31,7 +30,8 @@
   },
   "action": {
     "default_icon": "icons/icon128.png",
-    "default_title": "Ghost Profile"
+    "default_title": "Ghost Profile",
+    "default_popup": "popup/popup.html"
   },
   "icons": {
     "16": "icons/icon16.png",
@@ -44,6 +44,13 @@
       "js": ["src/content.js"],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/inject.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
     }
   ],
   "web_accessible_resources": [

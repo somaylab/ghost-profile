@@ -40,6 +40,16 @@
         }
       }));
     } catch (_) {}
+
+    // Fallback: Ensure inject.js executes even if world: MAIN was delayed
+    try {
+      if (!document.documentElement.hasAttribute('data-gp-active')) {
+        const s = document.createElement('script');
+        s.src = chrome.runtime.getURL('src/inject.js');
+        (document.head || document.documentElement).appendChild(s);
+        s.remove();
+      }
+    } catch (_) {}
   });
 
   // Listen for relay messages from inject.js via private CustomEvent

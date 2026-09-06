@@ -52,21 +52,26 @@ window.GhostGenerator = (function () {
    * ══════════════════════════════════════════════════════ */
   function detectRealBrowser() {
     const ua = navigator.userAgent;
+    const firefoxMatch = ua.match(/Firefox\/(\d+)/);
     const chromeMatch = ua.match(/Chrome\/(\d+)\.(\d+)\.(\d+)\.(\d+)/);
     const edgeMatch = ua.match(/Edg\/(\d+\.\d+\.\d+\.\d+)/);
     
+    let isFirefox = false;
+    let firefoxMajor = 128;
     let chromeMajor = 135;
     let chromeFull = '135.0.7049.96';
     let isEdge = false;
     let edgeBuild = '';
     
-    if (chromeMatch) {
-      chromeMajor = parseInt(chromeMatch[1]);
-      chromeFull = `${chromeMatch[1]}.${chromeMatch[2]}.${chromeMatch[3]}.${chromeMatch[4]}`;
-    }
-    if (edgeMatch) {
+    if (firefoxMatch) {
+      isFirefox = true;
+      firefoxMajor = parseInt(firefoxMatch[1], 10);
+    } else if (edgeMatch) {
       isEdge = true;
       edgeBuild = edgeMatch[1];
+    } else if (chromeMatch) {
+      chromeMajor = parseInt(chromeMatch[1]);
+      chromeFull = `${chromeMatch[1]}.${chromeMatch[2]}.${chromeMatch[3]}.${chromeMatch[4]}`;
     }
 
     // Detect OS from UA
@@ -96,6 +101,8 @@ window.GhostGenerator = (function () {
     }
 
     return {
+      isFirefox,
+      firefoxMajor,
       chromeMajor,
       chromeFull,
       isEdge,
@@ -686,21 +693,33 @@ window.GhostGenerator = (function () {
       gpu.r.match(/Apple (\S+ ?\S*)/)?.[1] || 'Apple GPU' :
       gpu.r.match(/(?:GeForce|Radeon|Iris|UHD|Arc).*?(?=\s*\(0x|\s*Direct|\s*,\s*Open)/)?.[0]?.trim() || 'GPU';
 
-    const label = `${real.isEdge ? 'Edge' : 'Chrome'} ${real.chromeMajor} · ${real.osId.toUpperCase()} · ${gpuShort}`;
+    let browserTag = `${real.isEdge ? 'Edge' : 'Chrome'} ${real.chromeMajor}`;
+    if (real.isFirefox) {
+      browserTag = `Firefox ${real.firefoxMajor}`;
+    }
+    const label = `${browserTag} · ${real.osId.toUpperCase()} · ${gpuShort}`;
 
     // ══════════════════════════════════════════════════════
     // COMPOSE PROFILE — UA/version stays REAL, rest spoofed
     // ══════════════════════════════════════════════════════
+    let defaultVendor = 'Google Inc.';
+    let defaultOscpu = undefined;
+    if (real.isFirefox) {
+      defaultVendor = '';
+      defaultOscpu = real.osId === 'win11' ? 'Windows NT 10.0; Win64; x64' : (real.osId === 'macos' ? 'Intel Mac OS X 10.15' : 'Linux x86_64');
+    }
+
     const p = {
       // ── Mode indicator ──
       stealthMode: true,
+      isFirefox: !!real.isFirefox,
 
       // ── Navigator (version = REAL, hardware = spoofed) ──
       userAgent: real.ua,                 // KEEP REAL!
       appVersion: real.ua.replace('Mozilla/', ''),
       platform: navigator.platform,       // KEEP REAL!
-      vendor: 'Google Inc.',
-      oscpu: undefined,
+      vendor: defaultVendor,
+      oscpu: defaultOscpu,
       languages: langs,
       hardwareConcurrency: cores,         // SPOOFED
       deviceMemory: mem,                  // SPOOFED
