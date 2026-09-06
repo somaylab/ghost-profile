@@ -181,8 +181,8 @@
         <div class="category-rows">
           
           <!-- Hardware Specs -->
-          <div class="module-row" data-row="ua">
-            <div class="module-left">
+          <div class="module-row hw-module-row" data-row="ua">
+            <div class="module-left" id="hw-row-trigger">
               <div class="module-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
@@ -198,8 +198,11 @@
                 </svg>
               </div>
               <div class="module-info">
-                <span class="module-name">Spesifikasi Perangkat</span>
-                <span class="module-desc">Menyamarkan CPU core, memori RAM, &amp; bahasa sistem</span>
+                <div class="hw-inline-title">
+                  <span class="module-name" data-i18n="mod_hw_name">Spesifikasi Perangkat</span>
+                  <span class="hw-status-pill mono" id="hw-status-pill">Acak ▸</span>
+                </div>
+                <span class="module-desc" data-i18n="mod_hw_desc">Menyamarkan CPU core, memori RAM, &amp; kapasitas sistem</span>
               </div>
             </div>
             <label class="switch-toggle row-toggle">
@@ -208,9 +211,29 @@
             </label>
           </div>
 
+          <!-- Hardware (RAM & CPU Cores) Selector Dropdown Panel -->
+          <div class="hw-selector-panel" id="hw-selector-panel" style="display: none;">
+            <div class="hw-panel-header">
+              <span class="hw-panel-title" data-i18n="hw_panel_title">RAM &amp; CPU Cores</span>
+              <button class="hw-reset-btn" id="hw-reset-btn" title="Kembalikan ke hardware acak" data-i18n="btn_random">Acak</button>
+            </div>
+            <div class="hw-sub-section">
+              <div class="hw-section-label" data-i18n="hw_ram_label">Memori RAM (Device Memory)</div>
+              <div class="hw-chip-group" id="hw-ram-chips">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+            <div class="hw-sub-section">
+              <div class="hw-section-label" data-i18n="hw_cpu_label">CPU Cores (Hardware Concurrency)</div>
+              <div class="hw-chip-group" id="hw-cores-chips">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
           <!-- Screen & Display -->
-          <div class="module-row" data-row="screen">
-            <div class="module-left">
+          <div class="module-row screen-module-row" data-row="screen">
+            <div class="module-left" id="screen-row-trigger">
               <div class="module-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
@@ -219,14 +242,40 @@
                 </svg>
               </div>
               <div class="module-info">
-                <span class="module-name">Layar &amp; Tampilan</span>
-                <span class="module-desc">Memanipulasi resolusi layar, kedalaman warna, &amp; DPR</span>
+                <div class="screen-inline-title">
+                  <span class="module-name" data-i18n="mod_screen_name">Layar &amp; Tampilan</span>
+                  <span class="screen-status-pill mono" id="screen-status-pill">Acak ▸</span>
+                </div>
+                <span class="module-desc" data-i18n="mod_screen_desc">Memanipulasi resolusi layar, kedalaman warna, &amp; DPR</span>
               </div>
             </div>
             <label class="switch-toggle row-toggle">
               <input type="checkbox" data-feature="screen" checked>
               <span class="switch-slider"></span>
             </label>
+          </div>
+
+          <!-- Screen Selector Dropdown Panel -->
+          <div class="screen-selector-panel" id="screen-selector-panel" style="display: none;">
+            <div class="screen-panel-header">
+              <div class="screen-search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" class="screen-search-input" id="screen-search-input" placeholder="Cari resolusi (1080p, 2K, 4K, 16:10)..." autocomplete="off" spellcheck="false" data-i18n-ph="ph_screen_search">
+              </div>
+              <button class="screen-reset-btn" id="screen-reset-btn" title="Kembalikan ke layar acak" data-i18n="btn_random">Acak</button>
+            </div>
+            <div class="screen-aspect-tabs" id="screen-aspect-tabs">
+              <button class="aspect-tab active" data-aspect="all" data-i18n="tab_all">Semua</button>
+              <button class="aspect-tab" data-aspect="16:9">16:9 Monitor</button>
+              <button class="aspect-tab" data-aspect="16:10">16:10 Laptop</button>
+              <button class="aspect-tab" data-aspect="ultrawide">Ultrawide</button>
+            </div>
+            <div class="screen-scroll-list" id="screen-scroll-list">
+              <!-- Populated by JS -->
+            </div>
           </div>
 
           <!-- Media Devices -->
@@ -312,8 +361,8 @@
           </div>
 
           <!-- WebGL Fingerprint -->
-          <div class="module-row" data-row="webgl">
-            <div class="module-left">
+          <div class="module-row gpu-module-row" data-row="webgl">
+            <div class="module-left" id="gpu-row-trigger">
               <div class="module-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <polygon points="12 2 2 22 22 22"></polygon>
@@ -321,14 +370,42 @@
                 </svg>
               </div>
               <div class="module-info">
-                <span class="module-name">Sidik Jari WebGL</span>
-                <span class="module-desc">Memanipulasi vendor GPU &amp; unmasked renderer</span>
+                <div class="gpu-inline-title">
+                  <span class="module-name" data-i18n="mod_webgl_name">Sidik Jari WebGL</span>
+                  <span class="gpu-status-pill mono" id="gpu-status-pill">Acak ▸</span>
+                </div>
+                <span class="module-desc" data-i18n="mod_webgl_desc">Memanipulasi vendor GPU &amp; unmasked renderer</span>
               </div>
             </div>
             <label class="switch-toggle row-toggle">
               <input type="checkbox" data-feature="webgl" checked>
               <span class="switch-slider"></span>
             </label>
+          </div>
+
+          <!-- GPU Selector Dropdown Panel -->
+          <div class="gpu-selector-panel" id="gpu-selector-panel" style="display: none;">
+            <div class="gpu-panel-header">
+              <div class="gpu-search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" class="gpu-search-input" id="gpu-search-input" placeholder="Cari GPU (RTX 4070, GTX 1650, RX 7800)..." autocomplete="off" spellcheck="false" data-i18n-ph="ph_gpu_search">
+              </div>
+              <button class="gpu-reset-btn" id="gpu-reset-btn" title="Kembalikan ke GPU acak" data-i18n="btn_random">Acak</button>
+            </div>
+            <div class="gpu-vendor-tabs" id="gpu-vendor-tabs">
+              <button class="vendor-tab active" data-vendor="all" data-i18n="tab_all">Semua</button>
+              <button class="vendor-tab" data-vendor="nvidia_desktop">NVIDIA PC</button>
+              <button class="vendor-tab" data-vendor="nvidia_laptop">NVIDIA Laptop</button>
+              <button class="vendor-tab" data-vendor="nvidia_workstation">Workstation</button>
+              <button class="vendor-tab" data-vendor="amd">AMD</button>
+              <button class="vendor-tab" data-vendor="intel">Intel</button>
+            </div>
+            <div class="gpu-scroll-list" id="gpu-scroll-list">
+              <!-- Populated by JS -->
+            </div>
           </div>
 
           <!-- AudioContext Deep -->

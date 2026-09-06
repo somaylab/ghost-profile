@@ -49,6 +49,32 @@
   const $catRenderingCount = document.getElementById('cat-count-rendering');
   const $catNetworkCount = document.getElementById('cat-count-network');
 
+  // Hardware (RAM & CPU Cores) UI
+  const $hwRowTrigger = document.getElementById('hw-row-trigger');
+  const $hwStatusPill = document.getElementById('hw-status-pill');
+  const $hwSelectorPanel = document.getElementById('hw-selector-panel');
+  const $hwResetBtn = document.getElementById('hw-reset-btn');
+  const $hwRamChips = document.getElementById('hw-ram-chips');
+  const $hwCoresChips = document.getElementById('hw-cores-chips');
+
+  // Screen UI
+  const $screenRowTrigger = document.getElementById('screen-row-trigger');
+  const $screenStatusPill = document.getElementById('screen-status-pill');
+  const $screenSelectorPanel = document.getElementById('screen-selector-panel');
+  const $screenSearchInput = document.getElementById('screen-search-input');
+  const $screenResetBtn = document.getElementById('screen-reset-btn');
+  const $screenAspectTabs = document.getElementById('screen-aspect-tabs');
+  const $screenScrollList = document.getElementById('screen-scroll-list');
+
+  // GPU WebGL UI
+  const $gpuRowTrigger = document.getElementById('gpu-row-trigger');
+  const $gpuStatusPill = document.getElementById('gpu-status-pill');
+  const $gpuSelectorPanel = document.getElementById('gpu-selector-panel');
+  const $gpuSearchInput = document.getElementById('gpu-search-input');
+  const $gpuResetBtn = document.getElementById('gpu-reset-btn');
+  const $gpuVendorTabs = document.getElementById('gpu-vendor-tabs');
+  const $gpuScrollList = document.getElementById('gpu-scroll-list');
+
   // Timezone UI
   const $tzRowTrigger = document.getElementById('tz-row-trigger');
   const $tzStatusPill = document.getElementById('tz-status-pill');
@@ -84,15 +110,24 @@
 
   /* ── State ──────────────────────────────────────────── */
   let currentProfile = null;
-  let selectedTimezone = null; // null = random
-  let selectedLanguage = null; // null = random (or language code like 'ru-RU')
+  let selectedGpu = null;       // null = random, or renderer string
+  let selectedScreen = null;    // null = random, or "1920x1080"
+  let selectedMemory = null;    // null = random, or number (GB)
+  let selectedCores = null;     // null = random, or number
+  let selectedTimezone = null;  // null = random
+  let selectedLanguage = null;  // null = random (or language code like 'ru-RU')
+  let activeVendor = 'all';
+  let activeAspect = 'all';
   let activeRegion = 'all';
   let activeLangRegion = 'all';
+  let isHwPanelOpen = false;
+  let isScreenPanelOpen = false;
+  let isGpuPanelOpen = false;
   let isTzPanelOpen = false;
   let isLangPanelOpen = false;
-  let currentLang = 'id';   // 'en' or 'id'
-  let currentTheme = 'dark'; // 'dark' or 'light'
-  let currentTab = 'spoof';  // 'spoof' or 'har'
+  let currentLang = 'id';       // 'en' or 'id'
+  let currentTheme = 'dark';    // 'dark' or 'light'
+  let currentTab = 'spoof';     // 'spoof' or 'har'
   let isSpoofEnabled = true;
   let isHarRecording = false;
 
@@ -188,6 +223,36 @@
     'lang-region-Americas': { en: 'Americas', id: 'Amerika' },
     'lang-region-Africa': { en: 'Africa & ME', id: 'Afrika & Timteng' },
     'lang-not-found': { en: 'Language not found', id: 'Bahasa tidak ditemukan' },
+
+    // Hardware Selector Module (RAM & CPU Cores)
+    'hw-random': { en: 'Random ▸', id: 'Acak ▸' },
+    'hw-panel-title': { en: 'RAM & CPU Cores', id: 'RAM & CPU Cores' },
+    'hw-reset-title': { en: 'Reset to random hardware specs', id: 'Kembalikan ke hardware acak' },
+    'hw-ram-label': { en: 'RAM Memory (Device Memory)', id: 'Memori RAM (Device Memory)' },
+    'hw-cpu-label': { en: 'CPU Cores (Hardware Concurrency)', id: 'CPU Cores (Hardware Concurrency)' },
+
+    // Screen Selector Module
+    'screen-random': { en: 'Random ▸', id: 'Acak ▸' },
+    'screen-search-placeholder': { en: 'Search resolution (1080p, 2K, 4K, 16:10)...', id: 'Cari resolusi (1080p, 2K, 4K, 16:10)...' },
+    'screen-reset-title': { en: 'Reset to random resolution', id: 'Kembalikan ke layar acak' },
+    'screen-tab-all': { en: 'All', id: 'Semua' },
+    'screen-tab-16-9': { en: '16:9 Monitor', id: '16:9 Monitor' },
+    'screen-tab-16-10': { en: '16:10 Laptop', id: '16:10 Laptop' },
+    'screen-tab-ultrawide': { en: 'Ultrawide', id: 'Ultrawide' },
+    'screen-not-found': { en: 'Resolution not found', id: 'Resolusi tidak ditemukan' },
+
+    // GPU Selector Module
+    'gpu-random': { en: 'Random ▸', id: 'Acak ▸' },
+    'gpu-search-placeholder': { en: 'Search GPU (RTX 4070, GTX 1650, RX 7800)...', id: 'Cari GPU (RTX 4070, GTX 1650, RX 7800)...' },
+    'gpu-reset-title': { en: 'Reset to random GPU', id: 'Kembalikan ke GPU acak' },
+    'gpu-tab-all': { en: 'All', id: 'Semua' },
+    'gpu-tab-nvidia-desktop': { en: 'NVIDIA PC', id: 'NVIDIA PC' },
+    'gpu-tab-nvidia-laptop': { en: 'NVIDIA Laptop', id: 'NVIDIA Laptop' },
+    'gpu-tab-nvidia-workstation': { en: 'Workstation', id: 'Workstation' },
+    'gpu-tab-amd': { en: 'AMD', id: 'AMD' },
+    'gpu-tab-intel': { en: 'Intel', id: 'Intel' },
+    'gpu-tab-apple': { en: 'Apple Metal', id: 'Apple Metal' },
+    'gpu-not-found': { en: 'GPU not found', id: 'GPU tidak ditemukan' },
 
     // Other modules
     'mod-webrtc': { en: 'WebRTC Leak Guard', id: 'Proteksi Kebocoran WebRTC' },
@@ -459,6 +524,379 @@
   }
 
   /* ══════════════════════════════════════════════════════
+   * 4A. HARDWARE SELECTOR (RAM & CPU Cores)
+   * ══════════════════════════════════════════════════════ */
+  const realBrowser = (window.GhostGenerator && window.GhostGenerator.detectRealBrowser) ? window.GhostGenerator.detectRealBrowser() : { osId: 'win11' };
+  const HW_OPTIONS = (window.GhostGenerator && window.GhostGenerator.getHardwareOptions) ? window.GhostGenerator.getHardwareOptions(realBrowser.osId) : { memory: [4, 8, 16, 32, 64], cores: [4, 6, 8, 12, 16, 24, 32] };
+
+  function buildHardwareChips() {
+    if (!$hwRamChips || !$hwCoresChips) return;
+    $hwRamChips.innerHTML = '';
+    $hwCoresChips.innerHTML = '';
+
+    HW_OPTIONS.memory.forEach(mem => {
+      const chip = document.createElement('button');
+      chip.className = `hw-chip${selectedMemory === mem ? ' selected' : ''}`;
+      chip.textContent = `${mem} GB`;
+      chip.addEventListener('click', () => {
+        if (selectedMemory === mem) {
+          selectedMemory = null;
+        } else {
+          selectedMemory = mem;
+        }
+        updateHwPill();
+        buildHardwareChips();
+        if (chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ ghostMemory: selectedMemory });
+        }
+      });
+      $hwRamChips.appendChild(chip);
+    });
+
+    HW_OPTIONS.cores.forEach(c => {
+      const chip = document.createElement('button');
+      chip.className = `hw-chip${selectedCores === c ? ' selected' : ''}`;
+      chip.textContent = `${c} Cores`;
+      chip.addEventListener('click', () => {
+        if (selectedCores === c) {
+          selectedCores = null;
+        } else {
+          selectedCores = c;
+        }
+        updateHwPill();
+        buildHardwareChips();
+        if (chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ ghostCores: selectedCores });
+        }
+      });
+      $hwCoresChips.appendChild(chip);
+    });
+  }
+
+  function updateHwPill() {
+    if (!$hwStatusPill) return;
+    if (selectedMemory && selectedCores) {
+      $hwStatusPill.textContent = `${selectedCores}c / ${selectedMemory}GB ▸`;
+      $hwStatusPill.classList.add('fixed');
+    } else if (selectedMemory) {
+      $hwStatusPill.textContent = `${selectedMemory} GB ▸`;
+      $hwStatusPill.classList.add('fixed');
+    } else if (selectedCores) {
+      $hwStatusPill.textContent = `${selectedCores} Cores ▸`;
+      $hwStatusPill.classList.add('fixed');
+    } else {
+      $hwStatusPill.textContent = t('hw-random');
+      $hwStatusPill.classList.remove('fixed');
+    }
+  }
+
+  function toggleHwPanel() {
+    isHwPanelOpen = !isHwPanelOpen;
+    $hwSelectorPanel.style.display = isHwPanelOpen ? 'block' : 'none';
+    if (isHwPanelOpen) {
+      if (isScreenPanelOpen) closeScreenPanel();
+      if (isGpuPanelOpen) closeGpuPanel();
+      if (isTzPanelOpen) closeTzPanel();
+      if (isLangPanelOpen) closeLangPanel();
+      buildHardwareChips();
+    }
+  }
+
+  function closeHwPanel() {
+    isHwPanelOpen = false;
+    if ($hwSelectorPanel) $hwSelectorPanel.style.display = 'none';
+  }
+
+  if ($hwRowTrigger) {
+    $hwRowTrigger.addEventListener('click', (e) => {
+      if (e.target.closest('.switch-toggle')) return;
+      toggleHwPanel();
+    });
+  }
+
+  if ($hwResetBtn) {
+    $hwResetBtn.addEventListener('click', () => {
+      selectedMemory = null;
+      selectedCores = null;
+      updateHwPill();
+      buildHardwareChips();
+      closeHwPanel();
+      if (chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ ghostMemory: null, ghostCores: null });
+      }
+    });
+  }
+
+  // Spec Hardware click jumps to panel
+  if ($specHardware) {
+    $specHardware.closest('.spec-item').addEventListener('click', () => {
+      const $catHardware = document.getElementById('cat-hardware');
+      if ($catHardware && $catHardware.classList.contains('collapsed')) {
+        $catHardware.classList.remove('collapsed');
+      }
+      if (!isHwPanelOpen) toggleHwPanel();
+      $hwSelectorPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+   * 4B. SCREEN RESOLUTION SELECTOR
+   * ══════════════════════════════════════════════════════ */
+  const ALL_SCREENS = (window.GhostGenerator && window.GhostGenerator.getScreenPool) ? window.GhostGenerator.getScreenPool(realBrowser.osId) : [];
+
+  function buildScreenList() {
+    if (!$screenScrollList) return;
+    const query = $screenSearchInput.value.toLowerCase().trim();
+    const aspect = activeAspect;
+    $screenScrollList.innerHTML = '';
+
+    let filtered = ALL_SCREENS;
+    if (aspect !== 'all') {
+      if (aspect === 'ultrawide') {
+        filtered = filtered.filter(s => s.aspect === '21:9' || s.aspect === '32:9');
+      } else {
+        filtered = filtered.filter(s => s.aspect === aspect);
+      }
+    }
+
+    if (query) {
+      filtered = filtered.filter(s => {
+        const text = `${s.w}x${s.h} ${s.w}×${s.h} ${s.label || ''} ${s.aspect || ''}`.toLowerCase();
+        return text.includes(query);
+      });
+    }
+
+    if (filtered.length === 0) {
+      $screenScrollList.innerHTML = `<div style="padding:10px;text-align:center;font-size:11px;color:var(--text-muted)">${t('screen-not-found')}</div>`;
+      return;
+    }
+
+    filtered.forEach(s => {
+      const resKey = `${s.w}x${s.h}`;
+      const item = document.createElement('div');
+      item.className = `screen-list-item${selectedScreen === resKey ? ' selected' : ''}`;
+      item.innerHTML = `
+        <span class="screen-item-res mono">${s.w}×${s.h} <span style="font-size:10px;opacity:0.7">${s.label ? '· ' + s.label : ''}</span></span>
+        <span class="screen-item-aspect mono">${s.aspect}</span>
+      `;
+      item.addEventListener('click', () => {
+        selectedScreen = resKey;
+        updateScreenPill();
+        closeScreenPanel();
+        if (chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ ghostScreen: selectedScreen });
+        }
+      });
+      $screenScrollList.appendChild(item);
+    });
+  }
+
+  function updateScreenPill() {
+    if (!$screenStatusPill) return;
+    if (selectedScreen) {
+      $screenStatusPill.textContent = `${selectedScreen.replace('x', '×')} ▸`;
+      $screenStatusPill.classList.add('fixed');
+    } else {
+      $screenStatusPill.textContent = t('screen-random');
+      $screenStatusPill.classList.remove('fixed');
+    }
+  }
+
+  function toggleScreenPanel() {
+    isScreenPanelOpen = !isScreenPanelOpen;
+    $screenSelectorPanel.style.display = isScreenPanelOpen ? 'block' : 'none';
+    if (isScreenPanelOpen) {
+      if (isHwPanelOpen) closeHwPanel();
+      if (isGpuPanelOpen) closeGpuPanel();
+      if (isTzPanelOpen) closeTzPanel();
+      if (isLangPanelOpen) closeLangPanel();
+      $screenSearchInput.value = '';
+      buildScreenList();
+      setTimeout(() => $screenSearchInput.focus(), 50);
+    }
+  }
+
+  function closeScreenPanel() {
+    isScreenPanelOpen = false;
+    if ($screenSelectorPanel) $screenSelectorPanel.style.display = 'none';
+  }
+
+  if ($screenRowTrigger) {
+    $screenRowTrigger.addEventListener('click', (e) => {
+      if (e.target.closest('.switch-toggle')) return;
+      toggleScreenPanel();
+    });
+  }
+
+  if ($screenResetBtn) {
+    $screenResetBtn.addEventListener('click', () => {
+      selectedScreen = null;
+      updateScreenPill();
+      closeScreenPanel();
+      if (chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ ghostScreen: null });
+      }
+    });
+  }
+
+  if ($screenSearchInput) {
+    $screenSearchInput.addEventListener('input', buildScreenList);
+  }
+
+  if ($screenAspectTabs) {
+    $screenAspectTabs.addEventListener('click', (e) => {
+      const tab = e.target.closest('.aspect-tab');
+      if (!tab) return;
+      activeAspect = tab.dataset.aspect;
+      $screenAspectTabs.querySelectorAll('.aspect-tab').forEach(b => b.classList.remove('active'));
+      tab.classList.add('active');
+      buildScreenList();
+    });
+  }
+
+  // Spec Screen click jumps to panel
+  if ($specScreen) {
+    $specScreen.closest('.spec-item').addEventListener('click', () => {
+      const $catHardware = document.getElementById('cat-hardware');
+      if ($catHardware && $catHardware.classList.contains('collapsed')) {
+        $catHardware.classList.remove('collapsed');
+      }
+      if (!isScreenPanelOpen) toggleScreenPanel();
+      $screenSelectorPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
+   * 4C. GPU WEBGL SELECTOR
+   * ══════════════════════════════════════════════════════ */
+  const ALL_GPUS = (window.GhostGenerator && window.GhostGenerator.getGpuPool) ? window.GhostGenerator.getGpuPool(realBrowser.osId) : [];
+
+  function formatGpuName(gpu) {
+    if (!gpu || !gpu.r) return 'GPU';
+    if (gpu.r.includes('Apple')) {
+      return gpu.r.match(/Apple (\S+ ?\S*)/)?.[1] || 'Apple GPU';
+    }
+    const m = gpu.r.match(/(?:GeForce|Radeon|Iris|UHD|Arc|RTX|Quadro).*?(?=\s*\(0x|\s*Direct|\s*,\s*Open|\s*Unspecified)/);
+    return m ? m[0].trim() : gpu.r;
+  }
+
+  function buildGpuList() {
+    if (!$gpuScrollList) return;
+    const query = $gpuSearchInput.value.toLowerCase().trim();
+    const vendor = activeVendor;
+    $gpuScrollList.innerHTML = '';
+
+    let filtered = ALL_GPUS;
+    if (vendor !== 'all') {
+      filtered = filtered.filter(g => g.cat === vendor);
+    }
+
+    if (query) {
+      filtered = filtered.filter(g => {
+        const name = formatGpuName(g).toLowerCase();
+        const raw = (g.r || '').toLowerCase();
+        return name.includes(query) || raw.includes(query);
+      });
+    }
+
+    if (filtered.length === 0) {
+      $gpuScrollList.innerHTML = `<div style="padding:10px;text-align:center;font-size:11px;color:var(--text-muted)">${t('gpu-not-found')}</div>`;
+      return;
+    }
+
+    filtered.forEach(g => {
+      const cleanName = formatGpuName(g);
+      const isSelected = selectedGpu && (selectedGpu === g.r || selectedGpu === cleanName);
+      const item = document.createElement('div');
+      item.className = `gpu-list-item${isSelected ? ' selected' : ''}`;
+      
+      let badgeLabel = g.cat ? g.cat.toUpperCase().replace('_', ' ') : (g.t || 'GPU');
+      if (badgeLabel === 'NVIDIA DESKTOP') badgeLabel = 'DESKTOP';
+      else if (badgeLabel === 'NVIDIA LAPTOP') badgeLabel = 'LAPTOP';
+      else if (badgeLabel === 'NVIDIA WORKSTATION') badgeLabel = 'WORKSTATION';
+
+      item.innerHTML = `
+        <span class="gpu-item-name">${cleanName}</span>
+        <span class="gpu-item-badge mono">${badgeLabel}</span>
+      `;
+      item.addEventListener('click', () => {
+        selectedGpu = g.r;
+        updateGpuPill();
+        closeGpuPanel();
+        if (chrome.storage && chrome.storage.local) {
+          chrome.storage.local.set({ ghostGpu: selectedGpu });
+        }
+      });
+      $gpuScrollList.appendChild(item);
+    });
+  }
+
+  function updateGpuPill() {
+    if (!$gpuStatusPill) return;
+    if (selectedGpu) {
+      const match = ALL_GPUS.find(g => g.r === selectedGpu);
+      const clean = match ? formatGpuName(match) : (selectedGpu.match(/(?:GeForce|Radeon|Iris|UHD|Arc|RTX|Quadro).*?(?=\s*\(0x|\s*Direct|\s*,\s*Open)/)?.[0]?.trim() || 'GPU');
+      $gpuStatusPill.textContent = `${clean} ▸`;
+      $gpuStatusPill.classList.add('fixed');
+    } else {
+      $gpuStatusPill.textContent = t('gpu-random');
+      $gpuStatusPill.classList.remove('fixed');
+    }
+  }
+
+  function toggleGpuPanel() {
+    isGpuPanelOpen = !isGpuPanelOpen;
+    $gpuSelectorPanel.style.display = isGpuPanelOpen ? 'block' : 'none';
+    if (isGpuPanelOpen) {
+      if (isHwPanelOpen) closeHwPanel();
+      if (isScreenPanelOpen) closeScreenPanel();
+      if (isTzPanelOpen) closeTzPanel();
+      if (isLangPanelOpen) closeLangPanel();
+      $gpuSearchInput.value = '';
+      buildGpuList();
+      setTimeout(() => $gpuSearchInput.focus(), 50);
+    }
+  }
+
+  function closeGpuPanel() {
+    isGpuPanelOpen = false;
+    if ($gpuSelectorPanel) $gpuSelectorPanel.style.display = 'none';
+  }
+
+  if ($gpuRowTrigger) {
+    $gpuRowTrigger.addEventListener('click', (e) => {
+      if (e.target.closest('.switch-toggle')) return;
+      toggleGpuPanel();
+    });
+  }
+
+  if ($gpuResetBtn) {
+    $gpuResetBtn.addEventListener('click', () => {
+      selectedGpu = null;
+      updateGpuPill();
+      closeGpuPanel();
+      if (chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ ghostGpu: null });
+      }
+    });
+  }
+
+  if ($gpuSearchInput) {
+    $gpuSearchInput.addEventListener('input', buildGpuList);
+  }
+
+  if ($gpuVendorTabs) {
+    $gpuVendorTabs.addEventListener('click', (e) => {
+      const tab = e.target.closest('.vendor-tab');
+      if (!tab) return;
+      activeVendor = tab.dataset.vendor;
+      $gpuVendorTabs.querySelectorAll('.vendor-tab').forEach(b => b.classList.remove('active'));
+      tab.classList.add('active');
+      buildGpuList();
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════
    * 4. TIMEZONE SELECTOR (118 Worldwide Zones)
    * ══════════════════════════════════════════════════════ */
   const ALL_TIMEZONES = (window.GhostGenerator && window.GhostGenerator.TIMEZONES) ? window.GhostGenerator.TIMEZONES : [];
@@ -552,6 +990,9 @@
     isTzPanelOpen = !isTzPanelOpen;
     $tzSelectorPanel.style.display = isTzPanelOpen ? 'block' : 'none';
     if (isTzPanelOpen) {
+      if (isHwPanelOpen) closeHwPanel();
+      if (isScreenPanelOpen) closeScreenPanel();
+      if (isGpuPanelOpen) closeGpuPanel();
       if (isLangPanelOpen) closeLangPanel();
       $tzSearchInput.value = '';
       buildTimezoneList();
@@ -685,6 +1126,9 @@
     isLangPanelOpen = !isLangPanelOpen;
     $langSelectorPanel.style.display = isLangPanelOpen ? 'block' : 'none';
     if (isLangPanelOpen) {
+      if (isHwPanelOpen) closeHwPanel();
+      if (isScreenPanelOpen) closeScreenPanel();
+      if (isGpuPanelOpen) closeGpuPanel();
       if (isTzPanelOpen) closeTzPanel();
       $langSearchInput.value = '';
       buildLanguageList();
@@ -935,6 +1379,10 @@
     const genOpts = {};
     if (selectedTimezone) genOpts.fixedTimezone = selectedTimezone;
     if (selectedLanguage) genOpts.fixedLanguage = selectedLanguage;
+    if (selectedGpu) genOpts.fixedGpu = selectedGpu;
+    if (selectedScreen) genOpts.fixedScreen = selectedScreen;
+    if (selectedMemory) genOpts.fixedMemory = selectedMemory;
+    if (selectedCores) genOpts.fixedCores = selectedCores;
     const generatedProfile = window.GhostGenerator.generate(genOpts);
 
     displayProfile(generatedProfile);
@@ -1080,6 +1528,59 @@
       const r = $tab.dataset.langRegion;
       if (r && langRegionTabMap[r]) $tab.textContent = t(langRegionTabMap[r]);
     });
+
+    // Hardware Selector Elements
+    const $hwTitle = document.querySelector('.hw-panel-title');
+    if ($hwTitle) $hwTitle.textContent = t('hw-panel-title');
+    if ($hwResetBtn) {
+      $hwResetBtn.textContent = t('tz-reset');
+      $hwResetBtn.title = t('hw-reset-title');
+    }
+    const $ramLabel = document.querySelector('[data-i18n="hw_ram_label"]');
+    if ($ramLabel) $ramLabel.textContent = t('hw-ram-label');
+    const $cpuLabel = document.querySelector('[data-i18n="hw_cpu_label"]');
+    if ($cpuLabel) $cpuLabel.textContent = t('hw-cpu-label');
+
+    // Screen Selector Elements
+    if ($screenSearchInput) $screenSearchInput.placeholder = t('screen-search-placeholder');
+    if ($screenResetBtn) {
+      $screenResetBtn.textContent = t('tz-reset');
+      $screenResetBtn.title = t('screen-reset-title');
+    }
+    const screenAspectTabMap = {
+      'all': 'screen-tab-all',
+      '16:9': 'screen-tab-16-9',
+      '16:10': 'screen-tab-16-10',
+      'ultrawide': 'screen-tab-ultrawide'
+    };
+    document.querySelectorAll('#screen-aspect-tabs .aspect-tab').forEach($tab => {
+      const a = $tab.dataset.aspect;
+      if (a && screenAspectTabMap[a]) $tab.textContent = t(screenAspectTabMap[a]);
+    });
+
+    // GPU Selector Elements
+    if ($gpuSearchInput) $gpuSearchInput.placeholder = t('gpu-search-placeholder');
+    if ($gpuResetBtn) {
+      $gpuResetBtn.textContent = t('tz-reset');
+      $gpuResetBtn.title = t('gpu-reset-title');
+    }
+    const gpuVendorTabMap = {
+      'all': 'gpu-tab-all',
+      'nvidia_desktop': 'gpu-tab-nvidia-desktop',
+      'nvidia_laptop': 'gpu-tab-nvidia-laptop',
+      'nvidia_workstation': 'gpu-tab-nvidia-workstation',
+      'amd': 'gpu-tab-amd',
+      'intel': 'gpu-tab-intel',
+      'apple': 'gpu-tab-apple'
+    };
+    document.querySelectorAll('#gpu-vendor-tabs .vendor-tab').forEach($tab => {
+      const v = $tab.dataset.vendor;
+      if (v && gpuVendorTabMap[v]) $tab.textContent = t(gpuVendorTabMap[v]);
+    });
+
+    updateHwPill();
+    updateScreenPill();
+    updateGpuPill();
 
     // Data Vault Section
     const $vaultEyebrow = document.querySelector('.vault-section .cat-eyebrow');
@@ -1252,18 +1753,30 @@
   }
 
   if (chrome.storage && chrome.storage.local) {
-    chrome.storage.local.get(['ghostTimezone', 'ghostLanguage', 'ghostLang', 'ghostTheme'], (res) => {
+    chrome.storage.local.get(['ghostGpu', 'ghostScreen', 'ghostMemory', 'ghostCores', 'ghostTimezone', 'ghostLanguage', 'ghostLang', 'ghostTheme'], (res) => {
+      if (res.ghostGpu !== undefined) selectedGpu = res.ghostGpu;
+      if (res.ghostScreen !== undefined) selectedScreen = res.ghostScreen;
+      if (res.ghostMemory !== undefined) selectedMemory = res.ghostMemory;
+      if (res.ghostCores !== undefined) selectedCores = res.ghostCores;
       if (res.ghostTimezone !== undefined) selectedTimezone = res.ghostTimezone;
       if (res.ghostLanguage !== undefined) selectedLanguage = res.ghostLanguage;
       if (res.ghostLang) currentLang = res.ghostLang;
       if (res.ghostTheme) currentTheme = res.ghostTheme;
       applyTheme();
       applyLanguage();
+      updateHwPill();
+      updateScreenPill();
+      updateGpuPill();
+      buildHardwareChips();
     });
   } else {
     // Initial apply for local / test environments
     applyTheme();
     applyLanguage();
+    updateHwPill();
+    updateScreenPill();
+    updateGpuPill();
+    buildHardwareChips();
   }
 
 })();

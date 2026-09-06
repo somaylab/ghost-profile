@@ -113,108 +113,166 @@ window.GhostGenerator = (function () {
 
   /* ── GPU Pools (verified PCI Device IDs from techpowerup/devicehunt) ── */
   const GPU_WINDOWS = [
-    // ── NVIDIA GeForce GTX (Turing/Pascal) ──
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1050 Ti (0x00001C82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1060 6GB (0x00001C20) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 (0x00001B81) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1080 (0x00001B80) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1080 Ti (0x00001B06) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 (0x00001F82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 SUPER (0x00002187) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER (0x000021C4) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 Ti (0x00002182) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    // ── NVIDIA GeForce RTX 20 Series (Turing) ──
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2060 (0x00001F08) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2060 SUPER (0x00001F47) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2070 SUPER (0x00001EC2) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2080 SUPER (0x00001E81) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2080 Ti (0x00001E07) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    // ── NVIDIA GeForce RTX 30 Series (Ampere) ──
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 (0x00002582) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002503) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Ti (0x00002489) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002484) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 Ti (0x00002482) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 Ti (0x00002208) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    // ── NVIDIA GeForce RTX 40 Series (Ada Lovelace) ──
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 (0x00002882) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Ti (0x00002803) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 (0x00002709) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 SUPER (0x00002783) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Ti (0x00002782) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Ti SUPER (0x00002705) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 (0x00002704) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 SUPER (0x00002702) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    // ── NVIDIA GeForce RTX 50 Series (Blackwell) ──
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5070 (0x00002F04) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5070 Ti (0x00002C05) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002B02) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
+    // ── NVIDIA GeForce Desktop: RTX 50 Series (Blackwell) ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 (0x00002B85) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5080 (0x00002B02) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5070 Ti (0x00002C05) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 5070 (0x00002F04) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+
+    // ── NVIDIA GeForce Desktop: RTX 40 Series (Ada Lovelace) ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 SUPER (0x00002702) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 (0x00002704) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Ti SUPER (0x00002705) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Ti (0x00002782) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 SUPER (0x00002783) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 (0x00002709) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Ti (0x00002803) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 (0x00002882) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+
+    // ── NVIDIA GeForce Desktop: RTX 30 Series (Ampere) ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 Ti (0x00002203) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 Ti (0x00002208) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 Ti (0x00002482) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002484) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Ti (0x00002489) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 12GB (0x00002503) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 8GB (0x00002504) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 8GB (0x00002582) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 6GB (0x00002507) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+
+    // ── NVIDIA GeForce Desktop: RTX 20 Series & Titan (Turing) ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA TITAN RTX (0x00001E02) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2080 Ti (0x00001E07) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2080 SUPER (0x00001E81) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2080 (0x00001E82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2070 SUPER (0x00001EC2) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2070 (0x00001F02) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2060 SUPER (0x00001F47) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 2060 (0x00001F08) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+
+    // ── NVIDIA GeForce Desktop: GTX 16 Series (Turing) ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 Ti (0x00002182) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER (0x000021C4) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 (0x00002184) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 SUPER (0x00002187) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 (0x00001F82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1630 (0x00002188) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+
+    // ── NVIDIA GeForce Desktop: GTX 10 Series & Titan (Pascal) ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA TITAN Xp (0x00001B02) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1080 Ti (0x00001B06) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1080 (0x00001B80) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 Ti (0x00001B82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 (0x00001B81) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1060 6GB (0x00001C20) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1060 3GB (0x00001C02) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1050 Ti (0x00001C82) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1050 (0x00001C81) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+
+    // ── NVIDIA GeForce Desktop: GTX 900 Series (Maxwell) ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 980 Ti (0x000017C8) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 980 (0x000013C0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 970 (0x000013C2) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 960 (0x00001401) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_desktop' },
+
+    // ── NVIDIA GeForce Laptop / Mobile ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 Laptop GPU (0x00002757) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 Laptop GPU (0x000027E0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Laptop GPU (0x00002820) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Laptop GPU (0x00002860) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4050 Laptop GPU (0x000028E1) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 Ti Laptop GPU (0x00002420) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 Laptop GPU (0x0000249C) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 Ti Laptop GPU (0x000024A0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 Laptop GPU (0x0000249D) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Laptop GPU (0x00002520) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 Ti Laptop GPU (0x000025A0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_laptop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 Laptop GPU (0x000025A2) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_laptop' },
+
+    // ── NVIDIA Workstation / Ada Generation & Quadro ──
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX 6000 Ada Generation (0x000026B1) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX 5000 Ada Generation (0x000026B2) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX 4500 Ada Generation (0x000026B3) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX 4000 Ada Generation (0x000027B0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX 2000 Ada Generation (0x000028B0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX A6000 (0x00002230) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX A5000 (0x00002231) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX A4000 (0x000024B0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA RTX A2000 (0x00002571) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, Quadro RTX 5000 (0x00001EB0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, Quadro RTX 4000 (0x00001EB1) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, Quadro P4000 (0x00001BB1) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'nvidia_workstation' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, Quadro P2000 (0x00001C30) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'nvidia_workstation' },
+
     // ── AMD Radeon RX 500 & 6000 Series (Polaris / RDNA 2) ──
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 570 (0x000067DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 580 (0x000067DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 5600 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6500 XT (0x0000743F) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6600 XT (0x000073FF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6650 XT (0x000073EF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6700 XT (0x000073DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6750 XT (0x000073DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6800 XT (0x000073BF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6900 XT (0x000073AF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 570 (0x000067DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 580 (0x000067DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 5600 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6500 XT (0x0000743F) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6600 XT (0x000073FF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6650 XT (0x000073EF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6700 XT (0x000073DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6750 XT (0x000073DF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6800 XT (0x000073BF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6900 XT (0x000073AF) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+
     // ── AMD Radeon RX 7000 Series (RDNA 3) ──
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7600 (0x00007480) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7700 XT (0x0000747E) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7800 XT (0x0000747E) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7900 XT (0x0000744C) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7900 XTX (0x00007448) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7600 (0x00007480) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7700 XT (0x0000747E) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7800 XT (0x0000747E) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7900 XT (0x0000744C) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7900 XTX (0x00007448) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+
     // ── AMD Radeon RX 9000 Series (RDNA 4) ──
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 9070 XT (0x00009441) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 9070 XT (0x00009441) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'amd' },
+
     // ── Intel (UHD / Iris / Arc) ──
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00003EA0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 770 (0x00004680) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Arc(TM) A580 Graphics (0x000056A1) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Arc(TM) A750 Graphics (0x000056A1) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Arc(TM) A770 Graphics (0x000056A0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00003EA0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 630 (0x00003E92) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 730 (0x00004692) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) UHD Graphics 770 (0x00004680) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'low', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Arc(TM) A580 Graphics (0x000056A1) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'mid', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Arc(TM) A750 Graphics (0x000056A1) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Intel(R) Arc(TM) A770 Graphics (0x000056A0) Direct3D11 vs_5_0 ps_5_0, D3D11)', t: 'high', cat: 'intel' }
   ];
 
   const GPU_MACOS = [
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)', t: 'mid' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Max, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Ultra, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)', t: 'mid' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Max, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Ultra, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M3, Unspecified Version)', t: 'mid' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M3 Pro, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M3 Max, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Pro, Unspecified Version)', t: 'high' },
-    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)', t: 'high' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)', t: 'mid', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Max, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Ultra, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)', t: 'mid', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Max, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Ultra, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M3, Unspecified Version)', t: 'mid', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M3 Pro, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M3 Max, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Pro, Unspecified Version)', t: 'high', cat: 'apple' },
+    { v: 'Google Inc. (Apple)', r: 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)', t: 'high', cat: 'apple' }
   ];
 
   const GPU_LINUX = [
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) UHD Graphics 630 (CFL GT2), OpenGL ES 3.2)', t: 'low' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) UHD Graphics 770 (ADL-S GT1), OpenGL ES 3.2)', t: 'low' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Iris(R) Xe Graphics (TGL GT2), OpenGL ES 3.2)', t: 'mid' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Arc(TM) A580 Graphics (DG2), OpenGL ES 3.2)', t: 'mid' },
-    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Arc(TM) A770 Graphics (DG2), OpenGL ES 3.2)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650/PCIe/SSE2, OpenGL ES 3.2)', t: 'low' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER/PCIe/SSE2, OpenGL ES 3.2)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060/PCIe/SSE2, OpenGL ES 3.2)', t: 'mid' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070/PCIe/SSE2, OpenGL ES 3.2)', t: 'high' },
-    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4080/PCIe/SSE2, OpenGL ES 3.2)', t: 'high' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 580 (radeonsi, polaris10, LLVM 15.0.7, DRM 3.49, 6.1.0), OpenGL ES 3.2)', t: 'low' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6600 (radeonsi, navi23, LLVM 15.0.7, DRM 3.49, 6.1.0), OpenGL ES 3.2)', t: 'mid' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7600 (radeonsi, navi33, LLVM 17.0.6, DRM 3.54, 6.6.0), OpenGL ES 3.2)', t: 'mid' },
-    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7800 XT (radeonsi, navi32, LLVM 17.0.6, DRM 3.54, 6.6.0), OpenGL ES 3.2)', t: 'high' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) UHD Graphics 630 (CFL GT2), OpenGL ES 3.2)', t: 'low', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) UHD Graphics 770 (ADL-S GT1), OpenGL ES 3.2)', t: 'low', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Iris(R) Xe Graphics (TGL GT2), OpenGL ES 3.2)', t: 'mid', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Arc(TM) A580 Graphics (DG2), OpenGL ES 3.2)', t: 'mid', cat: 'intel' },
+    { v: 'Google Inc. (Intel)', r: 'ANGLE (Intel, Mesa Intel(R) Arc(TM) A770 Graphics (DG2), OpenGL ES 3.2)', t: 'high', cat: 'intel' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650/PCIe/SSE2, OpenGL ES 3.2)', t: 'low', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1660 SUPER/PCIe/SSE2, OpenGL ES 3.2)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060/PCIe/SSE2, OpenGL ES 3.2)', t: 'mid', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4070/PCIe/SSE2, OpenGL ES 3.2)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4080/PCIe/SSE2, OpenGL ES 3.2)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (NVIDIA)', r: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 4090/PCIe/SSE2, OpenGL ES 3.2)', t: 'high', cat: 'nvidia_desktop' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 580 (radeonsi, polaris10, LLVM 15.0.7, DRM 3.49, 6.1.0), OpenGL ES 3.2)', t: 'low', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 6600 (radeonsi, navi23, LLVM 15.0.7, DRM 3.49, 6.1.0), OpenGL ES 3.2)', t: 'mid', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7600 (radeonsi, navi33, LLVM 17.0.6, DRM 3.54, 6.6.0), OpenGL ES 3.2)', t: 'mid', cat: 'amd' },
+    { v: 'Google Inc. (AMD)', r: 'ANGLE (AMD, AMD Radeon RX 7800 XT (radeonsi, navi32, LLVM 17.0.6, DRM 3.54, 6.6.0), OpenGL ES 3.2)', t: 'high', cat: 'amd' }
   ];
 
   const GPU_POOLS = { windows: GPU_WINDOWS, macos: GPU_MACOS, linux: GPU_LINUX };
@@ -222,53 +280,56 @@ window.GhostGenerator = (function () {
   /* ── Screen Resolution Pools Categorized by Hardware Tier (100% Market-Accurate Displays) ── */
   const SCREENS_BY_TIER = {
     low: [
-      { w: 1366, h: 768,  dpr: [1] },         // 16:9 HD 14"/15.6" budget laptop
-      { w: 1440, h: 900,  dpr: [1] },         // 16:10 19" desktop monitor
-      { w: 1536, h: 864,  dpr: [1, 1.25] },   // 16:9 1080p scaled at 125% in Windows
-      { w: 1600, h: 900,  dpr: [1] },         // 16:9 HD+ 20" office monitor
-      { w: 1680, h: 1050, dpr: [1] },         // 16:10 WSXGA+ 22" monitor
-      { w: 1920, h: 1080, dpr: [1, 1.25] },   // 16:9 Full HD 21.5"-24" monitor (Steam #1)
-      { w: 1920, h: 1200, dpr: [1, 1.25] }    // 16:10 WUXGA 14"/16" office laptop
+      { w: 1366, h: 768,  dpr: [1],       aspect: '16:9',  label: '1366×768 (HD 14"/15.6" Laptop)' },
+      { w: 1440, h: 900,  dpr: [1],       aspect: '16:10', label: '1440×900 (19" Monitor)' },
+      { w: 1536, h: 864,  dpr: [1, 1.25], aspect: '16:9',  label: '1536×864 (Scaled 125% Windows)' },
+      { w: 1600, h: 900,  dpr: [1],       aspect: '16:9',  label: '1600×900 (HD+ 20" Monitor)' },
+      { w: 1680, h: 1050, dpr: [1],       aspect: '16:10', label: '1680×1050 (WSXGA+ 22" Monitor)' },
+      { w: 1920, h: 1080, dpr: [1, 1.25], aspect: '16:9',  label: '1920×1080 (FHD 21.5"-24" Monitor)' },
+      { w: 1920, h: 1200, dpr: [1, 1.25], aspect: '16:10', label: '1920×1200 (WUXGA 14"/16" Laptop)' }
     ],
     mid: [
-      { w: 1920, h: 1080, dpr: [1, 1.25] },       // 16:9 Full HD 1080p 24"-27" gaming monitor
-      { w: 1920, h: 1200, dpr: [1, 1.25] },       // 16:10 WUXGA 16" productivity laptop
-      { w: 2560, h: 1080, dpr: [1] },             // 21:9 Ultrawide 29"-34" monitor
-      { w: 2560, h: 1440, dpr: [1, 1.25] },       // 16:9 2K QHD 27" mainstream monitor
-      { w: 2560, h: 1600, dpr: [1, 1.25, 1.5] }   // 16:10 QHD+ 16" gaming laptop (Legion, ROG)
+      { w: 1920, h: 1080, dpr: [1, 1.25],       aspect: '16:9',  label: '1920×1080 (FHD 24"-27" Monitor)' },
+      { w: 1920, h: 1200, dpr: [1, 1.25],       aspect: '16:10', label: '1920×1200 (WUXGA 16" Laptop)' },
+      { w: 2240, h: 1400, dpr: [1.25, 1.5],     aspect: '16:10', label: '2240×1400 (2.2K 14" Laptop)' },
+      { w: 2560, h: 1080, dpr: [1],             aspect: '21:9',  label: '2560×1080 (21:9 Ultrawide 29"-34")' },
+      { w: 2560, h: 1440, dpr: [1, 1.25],       aspect: '16:9',  label: '2560×1440 (2K QHD 27" Monitor)' },
+      { w: 2560, h: 1600, dpr: [1, 1.25, 1.5], aspect: '16:10', label: '2560×1600 (QHD+ 16" Gaming Laptop)' }
     ],
     high: [
-      { w: 1920, h: 1080, dpr: [1] },             // 16:9 FHD High-Refresh eSports 240Hz/360Hz monitor
-      { w: 2560, h: 1440, dpr: [1, 1.25] },       // 16:9 2K QHD 27" 165Hz/240Hz gaming monitor
-      { w: 2560, h: 1600, dpr: [1, 1.25, 1.5] },  // 16:10 QHD+ creator/gaming laptop
-      { w: 2880, h: 1800, dpr: [1.5, 2] },        // 16:10 3K OLED laptop (ASUS Zenbook, XPS)
-      { w: 3440, h: 1440, dpr: [1, 1.25] },       // 21:9 UWQHD 34" curved ultrawide monitor
-      { w: 3840, h: 2160, dpr: [1.5, 2] },        // 16:9 4K UHD 27"/32" enthusiast monitor
-      { w: 5120, h: 1440, dpr: [1] }              // 32:9 Super Ultrawide 49" monitor (Samsung G9)
+      { w: 1920, h: 1080, dpr: [1],             aspect: '16:9',  label: '1920×1080 (FHD eSports High-Hz)' },
+      { w: 2560, h: 1440, dpr: [1, 1.25],       aspect: '16:9',  label: '2560×1440 (2K QHD 165Hz/240Hz)' },
+      { w: 2560, h: 1600, dpr: [1, 1.25, 1.5], aspect: '16:10', label: '2560×1600 (QHD+ Creator/Gaming)' },
+      { w: 2880, h: 1800, dpr: [1.5, 2],        aspect: '16:10', label: '2880×1800 (3K OLED Laptop)' },
+      { w: 3200, h: 2000, dpr: [1.5, 2],        aspect: '16:10', label: '3200×2000 (3.2K Creator Laptop)' },
+      { w: 3440, h: 1440, dpr: [1, 1.25],       aspect: '21:9',  label: '3440×1440 (UWQHD 34" Ultrawide)' },
+      { w: 3840, h: 1600, dpr: [1, 1.25],       aspect: '21:9',  label: '3840×1600 (UW-QHD+ 38" Curved)' },
+      { w: 3840, h: 2160, dpr: [1.5, 2],        aspect: '16:9',  label: '3840×2160 (4K UHD 27"/32" Monitor)' },
+      { w: 5120, h: 1440, dpr: [1],             aspect: '32:9',  label: '5120×1440 (49" Super Ultrawide 32:9)' }
     ]
   };
 
   const SCREENS_MACOS_BY_TIER = {
     low: [
-      { w: 1440, h: 900,  dpr: [2] },   // 13.3" MacBook Air standard scaled
-      { w: 1512, h: 982,  dpr: [2] },   // 13.6" M2/M3 Air default desktop viewport
-      { w: 1920, h: 1080, dpr: [1, 2] },// 1080p external display
-      { w: 2560, h: 1440, dpr: [1, 2] } // 1440p external display
+      { w: 1440, h: 900,  dpr: [2],    aspect: '16:10', label: '1440×900 (13.3" MacBook Air)' },
+      { w: 1512, h: 982,  dpr: [2],    aspect: '16:10', label: '1512×982 (13.6" M2/M3 Air Viewport)' },
+      { w: 1920, h: 1080, dpr: [1, 2], aspect: '16:9',  label: '1920×1080 (1080p External Display)' },
+      { w: 2560, h: 1440, dpr: [1, 2], aspect: '16:9',  label: '2560×1440 (1440p External Display)' }
     ],
     mid: [
-      { w: 1512, h: 982,  dpr: [2] },   // 14" MacBook Pro default viewport
-      { w: 1728, h: 1117, dpr: [2] },   // 15" MacBook Air / 16" MacBook Pro default viewport
-      { w: 1800, h: 1169, dpr: [2] },   // 15.3" MacBook Air scaled
-      { w: 2560, h: 1440, dpr: [1, 2] },// 27" Apple Studio Display scaled
-      { w: 2560, h: 1600, dpr: [2] }    // 13.3" MacBook Pro Retina
+      { w: 1512, h: 982,  dpr: [2],    aspect: '16:10', label: '1512×982 (14" MacBook Pro Viewport)' },
+      { w: 1728, h: 1117, dpr: [2],    aspect: '16:10', label: '1728×1117 (15" Air / 16" Pro Viewport)' },
+      { w: 1800, h: 1169, dpr: [2],    aspect: '16:10', label: '1800×1169 (15.3" MacBook Air Scaled)' },
+      { w: 2560, h: 1440, dpr: [1, 2], aspect: '16:9',  label: '2560×1440 (Studio Display Scaled)' },
+      { w: 2560, h: 1600, dpr: [2],    aspect: '16:10', label: '2560×1600 (13.3" MacBook Pro Retina)' }
     ],
     high: [
-      { w: 1512, h: 982,  dpr: [2] },   // 14" MacBook Pro Retina viewport
-      { w: 1728, h: 1117, dpr: [2] },   // 16" MacBook Pro Retina viewport
-      { w: 2560, h: 1440, dpr: [2] },   // Apple Studio Display 2K scaled
-      { w: 3024, h: 1964, dpr: [2] },   // 14" MacBook Pro Native Panel
-      { w: 3456, h: 2234, dpr: [2] },   // 16" MacBook Pro Native Panel
-      { w: 5120, h: 2880, dpr: [2] }    // 5K Apple Studio Display / iMac 27"
+      { w: 1512, h: 982,  dpr: [2], aspect: '16:10', label: '1512×982 (14" MacBook Pro Retina Viewport)' },
+      { w: 1728, h: 1117, dpr: [2], aspect: '16:10', label: '1728×1117 (16" MacBook Pro Retina Viewport)' },
+      { w: 2560, h: 1440, dpr: [2], aspect: '16:9',  label: '2560×1440 (Studio Display 2K Scaled)' },
+      { w: 3024, h: 1964, dpr: [2], aspect: '16:10', label: '3024×1964 (14" MacBook Pro Native Panel)' },
+      { w: 3456, h: 2234, dpr: [2], aspect: '16:10', label: '3456×2234 (16" MacBook Pro Native Panel)' },
+      { w: 5120, h: 2880, dpr: [2], aspect: '16:9',  label: '5120×2880 (5K Apple Studio Display / iMac)' }
     ]
   };
 
@@ -527,24 +588,58 @@ window.GhostGenerator = (function () {
     const real = detectRealBrowser();
     const osInfo = OS_INFO[real.osId] || OS_INFO.win11;
 
-    // ── GPU (randomized) ──
-    const gpuPool = GPU_POOLS[osInfo.gpuPool];
-    const gpu = pick(gpuPool);
+    // ── GPU (manual override or randomized from OS pool) ──
+    const gpuPool = GPU_POOLS[osInfo.gpuPool] || GPU_WINDOWS;
+    let gpu;
+    if (options.fixedGpu) {
+      if (typeof options.fixedGpu === 'object') {
+        gpu = options.fixedGpu;
+      } else {
+        gpu = gpuPool.find(g => g.r === options.fixedGpu || g.r.includes(options.fixedGpu)) || pick(gpuPool);
+      }
+    } else {
+      gpu = pick(gpuPool);
+    }
     const tier = gpu.t || 'mid';
 
-    // ── Hardware matching GPU tier ──
+    // ── Hardware matching GPU tier (or manual override) ──
     const hwTable = real.osId === 'macos' ? HW_MACOS : HW_TIERS;
     const hw = hwTable[tier] || hwTable.mid;
-    const cores = pick(hw.cores);
-    const mem = pick(hw.mem);
+    const cores = options.fixedCores ? Number(options.fixedCores) : pick(hw.cores);
+    const mem = options.fixedMemory ? Number(options.fixedMemory) : pick(hw.mem);
     const colorDepth = pick(hw.colorDepth);
 
-    // ── Screen & DPR matching GPU & OS tier (100% realistic market pairings) ──
+    // ── Screen & DPR matching GPU & OS tier (or manual override) ──
     const screenTable = real.osId === 'macos' ? SCREENS_MACOS_BY_TIER : SCREENS_BY_TIER;
     const screenPool = screenTable[tier] || screenTable.mid;
-    const scrObj = pick(screenPool);
-    const scr = { w: scrObj.w, h: scrObj.h };
-    const dpr = pick(scrObj.dpr);
+    let scr, dpr;
+    if (options.fixedScreen) {
+      let fw, fh;
+      if (typeof options.fixedScreen === 'object') {
+        fw = options.fixedScreen.w;
+        fh = options.fixedScreen.h;
+      } else if (typeof options.fixedScreen === 'string') {
+        const parts = options.fixedScreen.toLowerCase().split(/[x×]/);
+        if (parts.length === 2) {
+          fw = parseInt(parts[0].trim(), 10);
+          fh = parseInt(parts[1].trim(), 10);
+        }
+      }
+      if (fw && fh) {
+        scr = { w: fw, h: fh };
+        const allScreens = (screenTable.high || []).concat(screenTable.mid || [], screenTable.low || []);
+        const found = allScreens.find(s => s.w === fw && s.h === fh);
+        dpr = options.fixedDpr ? Number(options.fixedDpr) : ((found && found.dpr) ? pick(found.dpr) : pick(osInfo.dprOptions));
+      } else {
+        const scrObj = pick(screenPool);
+        scr = { w: scrObj.w, h: scrObj.h };
+        dpr = pick(scrObj.dpr);
+      }
+    } else {
+      const scrObj = pick(screenPool);
+      scr = { w: scrObj.w, h: scrObj.h };
+      dpr = options.fixedDpr ? Number(options.fixedDpr) : pick(scrObj.dpr);
+    }
     const availH = scr.h - osInfo.taskbarH;
 
     // ── Timezone (fixed or randomized) ──
@@ -689,6 +784,50 @@ window.GhostGenerator = (function () {
     return p;
   }
 
-  return { generate, TIMEZONES, LANGUAGES };
+  function getGpuPool(osId) {
+    if (osId === 'macos') return GPU_MACOS;
+    if (osId === 'linux') return GPU_LINUX;
+    return GPU_WINDOWS;
+  }
+
+  function getScreenPool(osId) {
+    const list = [];
+    const seen = new Set();
+    const source = osId === 'macos' ? SCREENS_MACOS_BY_TIER : SCREENS_BY_TIER;
+    ['low', 'mid', 'high'].forEach(tier => {
+      (source[tier] || []).forEach(s => {
+        const key = `${s.w}x${s.h}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          list.push({ w: s.w, h: s.h, aspect: s.aspect, label: s.label });
+        }
+      });
+    });
+    return list;
+  }
+
+  function getHardwareOptions(osId) {
+    if (osId === 'macos') {
+      return {
+        memory: [8, 16, 18, 24, 32, 36, 48, 64, 96, 128],
+        cores: [8, 10, 11, 12, 14, 16, 24]
+      };
+    }
+    return {
+      memory: [4, 8, 16, 32, 64],
+      cores: [4, 6, 8, 12, 16, 24, 32]
+    };
+  }
+
+  return {
+    generate,
+    TIMEZONES,
+    LANGUAGES,
+    getGpuPool,
+    getScreenPool,
+    getHardwareOptions,
+    detectRealBrowser
+  };
 })();
+
 

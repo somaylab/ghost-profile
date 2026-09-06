@@ -427,15 +427,28 @@
 
     function getGpuTier() {
       const r = P.webglRenderer || '';
-      if (r.includes('RTX 50') || r.includes('RTX 407') || r.includes('RTX 408') || r.includes('RTX 409') ||
-          r.includes('RTX 4060 Ti') || r.includes('RTX 307') || r.includes('RTX 308') || r.includes('RTX 309') ||
-          r.includes('RTX 3060 Ti') || r.includes('RTX 207') || r.includes('RTX 208') ||
-          r.includes('RX 6700') || r.includes('RX 7700') || r.includes('RX 7800') || r.includes('RX 7900') || r.includes('RX 9070') ||
-          r.includes('Arc(TM) A770') || r.includes('M1 Pro') || r.includes('M2 Pro') || r.includes('M3 Pro') || r.includes('M3 Max') || r.includes('M4')) return 'high';
-      if (r.includes('RTX 4060') || r.includes('RTX 3060') || r.includes('RTX 2060') ||
-          r.includes('GTX 1660') || r.includes('GTX 1650 SUPER') ||
+      // High tier: flagship & performance desktop/laptop, workstations, Apple Pro/Max/Ultra
+      if (r.includes('RTX 50') || r.includes('RTX 409') || r.includes('RTX 408') || r.includes('RTX 407') ||
+          r.includes('RTX 4060 Ti') || r.includes('RTX 309') || r.includes('RTX 308') || r.includes('RTX 307') ||
+          r.includes('RTX 3060 Ti') || r.includes('RTX 208') || r.includes('RTX 207') ||
+          r.includes('Titan') || r.includes('GTX 1080') || r.includes('GTX 1070') || r.includes('GTX 980') ||
+          r.includes('RTX 6000') || r.includes('RTX 5000') || r.includes('RTX 4000') ||
+          r.includes('RTX A6000') || r.includes('RTX A5000') || r.includes('RTX A4000') ||
+          r.includes('Quadro RTX') ||
+          r.includes('RX 67') || r.includes('RX 68') || r.includes('RX 69') ||
+          r.includes('RX 77') || r.includes('RX 78') || r.includes('RX 79') || r.includes('RX 9070') ||
+          r.includes('Arc(TM) A7') ||
+          r.includes('Pro') || r.includes('Max') || r.includes('Ultra') || r.includes('M4')) return 'high';
+
+      // Mid tier: mainstream gaming & modern laptops, creator workstation entry
+      if (r.includes('RTX 4060') || r.includes('RTX 4050') || r.includes('RTX 3060') || r.includes('RTX 3050') ||
+          r.includes('RTX 2060') || r.includes('GTX 1660') || r.includes('GTX 1650 SUPER') ||
+          r.includes('GTX 1060') || r.includes('GTX 970') || r.includes('GTX 960') ||
+          r.includes('RTX 2000') || r.includes('RTX A2000') || r.includes('Quadro P4000') ||
           r.includes('RX 5600') || r.includes('RX 6600') || r.includes('RX 6650') || r.includes('RX 7600') ||
-          r.includes('Iris') || r.includes('M1') || r.includes('M2') || r.includes('M3')) return 'mid';
+          r.includes('Arc(TM) A580') || r.includes('Iris') ||
+          r.includes('M1') || r.includes('M2') || r.includes('M3')) return 'mid';
+
       return 'low';
     }
 

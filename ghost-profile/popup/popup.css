@@ -866,6 +866,252 @@ html, body {
   text-transform: uppercase;
 }
 
+/* ── Hardware (RAM & CPU Cores), Screen & GPU Selectors ──── */
+.hw-module-row .module-left,
+.screen-module-row .module-left,
+.gpu-module-row .module-left {
+  cursor: pointer;
+}
+
+.hw-inline-title,
+.screen-inline-title,
+.gpu-inline-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hw-status-pill,
+.screen-status-pill,
+.gpu-status-pill {
+  font-size: 10px;
+  color: var(--accent-signal);
+  padding: 1px 6px;
+  background: var(--accent-signal-dim);
+  border-radius: 4px;
+  border: 1px solid rgba(62, 217, 163, 0.2);
+  white-space: nowrap;
+  transition: all 0.2s var(--ease-out);
+}
+.hw-status-pill.fixed,
+.screen-status-pill.fixed,
+.gpu-status-pill.fixed {
+  color: #81C784;
+  background: rgba(129, 199, 132, 0.12);
+  border-color: rgba(129, 199, 132, 0.2);
+}
+
+.hw-selector-panel,
+.screen-selector-panel,
+.gpu-selector-panel {
+  padding: 12px 14px;
+  background: var(--bg-base);
+  border-top: 1px solid var(--border-hairline);
+  border-bottom: 1px solid var(--border-hairline);
+  animation: panelSlideIn 0.2s var(--ease-out);
+}
+
+.hw-panel-header,
+.screen-panel-header,
+.gpu-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.hw-panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.screen-search-box,
+.gpu-search-box {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.screen-search-box svg,
+.gpu-search-box svg {
+  position: absolute;
+  left: 9px;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+.screen-search-box:focus-within svg,
+.gpu-search-box:focus-within svg {
+  color: var(--accent-signal);
+}
+.screen-search-input,
+.gpu-search-input {
+  width: 100%;
+  padding: 7px 8px 7px 30px;
+  background: var(--surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.screen-search-input:focus,
+.gpu-search-input:focus {
+  border-color: var(--accent-signal);
+  box-shadow: 0 0 0 2px rgba(62, 217, 163, 0.1);
+}
+.screen-search-input::placeholder,
+.gpu-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.hw-reset-btn,
+.screen-reset-btn,
+.gpu-reset-btn {
+  padding: 0 12px;
+  height: 30px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-hairline);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s var(--ease-out);
+}
+.hw-reset-btn:hover,
+.screen-reset-btn:hover,
+.gpu-reset-btn:hover {
+  background: var(--accent-signal-dim);
+  color: var(--accent-signal);
+  border-color: var(--accent-signal);
+}
+
+.screen-aspect-tabs,
+.gpu-vendor-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.aspect-tab,
+.vendor-tab {
+  padding: 3px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+}
+.aspect-tab:hover,
+.vendor-tab:hover {
+  color: var(--text-primary);
+  background: var(--surface-raised);
+}
+.aspect-tab.active,
+.vendor-tab.active {
+  background: var(--accent-signal-dim);
+  color: var(--accent-signal);
+  border-color: rgba(62, 217, 163, 0.3);
+}
+
+.hw-sub-section {
+  margin-bottom: 10px;
+}
+.hw-sub-section:last-child {
+  margin-bottom: 0;
+}
+.hw-section-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.hw-chip-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.hw-chip {
+  padding: 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s var(--ease-out);
+}
+.hw-chip:hover {
+  background: var(--surface-raised);
+  border-color: var(--border-focus);
+}
+.hw-chip.selected {
+  background: var(--accent-signal-dim);
+  color: var(--accent-signal);
+  border-color: rgba(62, 217, 163, 0.4);
+  font-weight: 600;
+}
+
+.screen-scroll-list,
+.gpu-scroll-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border-hairline);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.screen-list-item,
+.gpu-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.15s var(--ease-out), color 0.15s;
+}
+.screen-list-item:hover,
+.gpu-list-item:hover {
+  background: var(--surface-raised);
+  color: var(--accent-signal);
+}
+.screen-list-item.selected,
+.gpu-list-item.selected {
+  background: var(--accent-signal-dim);
+  color: var(--accent-signal);
+  font-weight: 500;
+}
+.screen-item-res,
+.gpu-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.screen-item-aspect,
+.gpu-item-badge {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.gpu-item-badge {
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
 /* ── Data Vault (Export / Import) ──────────────────────── */
 .vault-section {
   background: var(--surface);
