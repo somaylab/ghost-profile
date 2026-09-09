@@ -1,5 +1,5 @@
 /**
- * Ghost Profile — inject.js v4.2 (HARDENED & STEALTH-CERTIFIED)
+ * Ghost Profile — inject.js v4.4 (HARDENED & STEALTH-CERTIFIED)
  * ═══════════════════════════════════════════════════════════════
  * Core fingerprint spoofing engine. Runs in MAIN world at
  * document_start BEFORE any page scripts execute.
@@ -24,6 +24,7 @@
  *  14.  Speech Synthesis Voices (filtered to common subset on prototype)
  *  15.  Gamepad API (clean prototype empty return)
  *  16.  HAR Interaction Breadcrumbs & Payload Relay
+ *  17.  Adobe Commerce GraphQL Promo Interceptor
  * ═══════════════════════════════════════════════════════════════
  */
 (function () {
@@ -297,15 +298,40 @@
     try { overrideGetter(Window.prototype, 'devicePixelRatio', () => P.devicePixelRatio || 1); } catch (_) {}
     try { overrideGetter(Window.prototype, 'outerWidth', () => P.outerWidth || P.screenWidth || 1920); } catch (_) {}
     try { overrideGetter(Window.prototype, 'outerHeight', () => P.outerHeight || P.screenHeight || 1080); } catch (_) {}
-    try { overrideGetter(Window.prototype, 'innerWidth', () => Math.min(P.outerWidth || 1920, P.screenWidth || 1920)); } catch (_) {}
-    try { overrideGetter(Window.prototype, 'innerHeight', () => Math.min(P.outerHeight || 1080, P.screenHeight || 1080)); } catch (_) {}
+    // C2: Realistic viewport — screen minus browser chrome (scrollbar, tabs, address bar)
+    const _innerW = () => P.innerWidth || ((P.screenWidth || 1920) - 17);
+    const _innerH = () => P.innerHeight || ((P.availHeight || (P.screenHeight || 1080) - 40) - 116);
+    try { overrideGetter(Window.prototype, 'innerWidth', _innerW); } catch (_) {}
+    try { overrideGetter(Window.prototype, 'innerHeight', _innerH); } catch (_) {}
     try { overrideGetter(Window.prototype, 'screenX', () => 0); } catch (_) {}
     try { overrideGetter(Window.prototype, 'screenY', () => 0); } catch (_) {}
 
+    // C3: Override document.documentElement.clientWidth/clientHeight
+    // Adobe Alloy SDK and some fingerprinters read viewport via this path
+    try {
+      const _origClientWidthDesc = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth');
+      const _origClientHeightDesc = Object.getOwnPropertyDescriptor(Element.prototype, 'clientHeight');
+      if (_origClientWidthDesc && _origClientWidthDesc.get) {
+        const _origCWGetter = _origClientWidthDesc.get;
+        overrideGetter(Element.prototype, 'clientWidth', function () {
+          if (this === document.documentElement) return _innerW();
+          return _origCWGetter.call(this);
+        });
+      }
+      if (_origClientHeightDesc && _origClientHeightDesc.get) {
+        const _origCHGetter = _origClientHeightDesc.get;
+        overrideGetter(Element.prototype, 'clientHeight', function () {
+          if (this === document.documentElement) return _innerH();
+          return _origCHGetter.call(this);
+        });
+      }
+    } catch (_) {}
+
     try {
       if (window.visualViewport) {
-        overrideGetter(VisualViewport.prototype, 'width', () => Math.min(P.outerWidth || 1920, P.screenWidth || 1920));
-        overrideGetter(VisualViewport.prototype, 'height', () => Math.min(P.outerHeight || 1080, P.screenHeight || 1080));
+        // C4: VisualViewport consistent with realistic viewport
+        overrideGetter(VisualViewport.prototype, 'width', _innerW);
+        overrideGetter(VisualViewport.prototype, 'height', _innerH);
       }
     } catch (_) {}
 
@@ -785,7 +811,9 @@
       overrideMethod(StorageManager.prototype, 'estimate', function () {
         _storageCallCount++;
         const baseUsage = P.storageUsage || 350e6;
-        const variance = _storageCallCount * (1024 * Math.floor(Math.random() * 100 + 10));
+        // C5: Use seeded PRNG for deterministic storage values (not Math.random)
+        const rng = mulberry32((P.canvasNoiseSeed || 0.5) * 1e6 + _storageCallCount * 31);
+        const variance = _storageCallCount * (1024 * Math.floor(rng() * 100 + 10));
         return Promise.resolve({
           quota: P.storageQuota || 250e9,
           usage: baseUsage + variance
@@ -1012,7 +1040,6 @@
   try {
     const _origFetch = window.fetch;
     window.fetch = maskFn(async function (input, init) {
-      if (!_harRecordingActive) return _origFetch.apply(this, arguments);
       let url = '', method = 'GET', reqBody = null;
       try {
         if (typeof input === 'string') url = input;
@@ -1020,16 +1047,64 @@
         if (init) { if (init.method) method = init.method.toUpperCase(); if (init.body) reqBody = init.body; }
         else if (input && input.method) method = input.method.toUpperCase();
       } catch (_) {}
-      const action = getRecentAction();
-      const res = await _origFetch.apply(this, arguments);
+
+      // ── C6: Adobe Commerce GraphQL Promo Interceptor ──
+      // Strip promotionCodes from checkout API requests to prevent
+      // INVALID_CONCESSION error caused by geo-targeted promo mismatch
       try {
-        const clone = res.clone();
-        clone.text().then(text => {
-          document.dispatchEvent(new CustomEvent(_EVT_HAR, {
-            detail: { url: res.url || url, method, requestBody: reqBody, responseBody: text ? text.substring(0, 200000) : '', action }
-          }));
-        }).catch(() => {});
+        if (url.includes('commerce.adobe.com') && url.includes('graphql') && method === 'POST') {
+          let bodyStr = '';
+          if (typeof reqBody === 'string') bodyStr = reqBody;
+          else if (reqBody && typeof reqBody.text === 'function') bodyStr = await reqBody.text();
+          if (bodyStr && bodyStr.includes('promotionCodes')) {
+            const bodyObj = JSON.parse(bodyStr);
+            let modified = false;
+            if (bodyObj.variables) {
+              if (bodyObj.variables.inputOrder && Array.isArray(bodyObj.variables.inputOrder.promotionCodes)) {
+                bodyObj.variables.inputOrder.promotionCodes = [];
+                modified = true;
+              }
+              if (bodyObj.variables.segmentationOffersInput && Array.isArray(bodyObj.variables.segmentationOffersInput.promotionCodes)) {
+                bodyObj.variables.segmentationOffersInput.promotionCodes = [];
+                modified = true;
+              }
+            }
+            if (modified) {
+              const newBody = JSON.stringify(bodyObj);
+              const newInit = init ? { ...init, body: newBody } : { method: 'POST', body: newBody };
+              // Preserve original headers
+              if (init && init.headers) newInit.headers = init.headers;
+              const res = await _origFetch.call(this, input instanceof Request ? url : input, newInit);
+              // HAR relay for modified request
+              if (_harRecordingActive) {
+                try {
+                  const action = getRecentAction();
+                  const clone = res.clone();
+                  clone.text().then(text => {
+                    document.dispatchEvent(new CustomEvent(_EVT_HAR, {
+                      detail: { url: res.url || url, method, requestBody: newBody, responseBody: text ? text.substring(0, 200000) : '', action: (action || '') + ' [promo-stripped]' }
+                    }));
+                  }).catch(() => {});
+                } catch (_) {}
+              }
+              return res;
+            }
+          }
+        }
       } catch (_) {}
+
+      const action = _harRecordingActive ? getRecentAction() : null;
+      const res = await _origFetch.apply(this, arguments);
+      if (_harRecordingActive) {
+        try {
+          const clone = res.clone();
+          clone.text().then(text => {
+            document.dispatchEvent(new CustomEvent(_EVT_HAR, {
+              detail: { url: res.url || url, method, requestBody: reqBody, responseBody: text ? text.substring(0, 200000) : '', action }
+            }));
+          }).catch(() => {});
+        } catch (_) {}
+      }
       return res;
     }, 'fetch', 1, false);
   } catch (_) {}

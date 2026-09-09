@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Ghost Profile",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "description": "Stealth fingerprint spoofing — changes what you look like, not who you are",
   "permissions": [
     "storage",
@@ -46,11 +46,5 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["src/inject.js"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  }
 }
