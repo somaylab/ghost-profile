@@ -756,6 +756,9 @@ window.GhostGenerator = (function () {
       availHeight: availH,
       outerWidth: scr.w,
       outerHeight: availH,
+      // C8: Realistic viewport — screen minus browser chrome
+      innerWidth: scr.w - 17,          // scrollbar width
+      innerHeight: availH - 116,       // tabs + address bar + bookmarks bar
       colorDepth,
       pixelDepth: colorDepth,
       devicePixelRatio: dpr,

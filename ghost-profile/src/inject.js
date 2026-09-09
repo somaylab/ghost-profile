@@ -30,6 +30,13 @@
 (function () {
   'use strict';
 
+  // Mark that inject.js is running
+  try {
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.setAttribute('data-gp-active', '1');
+    }
+  } catch (_) {}
+
   /* ──────────────────────────────────────────────────────────────
    * OBFUSCATED EVENT NAMES (L6: prevent extension detection)
    * ────────────────────────────────────────────────────────────── */
@@ -240,7 +247,10 @@
       try { overrideGetter(Navigator.prototype, 'userAgent', () => P.userAgent); } catch (_) {}
       try { overrideGetter(Navigator.prototype, 'appVersion', () => P.appVersion || P.userAgent.replace('Mozilla/', '')); } catch (_) {}
       try { overrideGetter(Navigator.prototype, 'platform', () => P.platform || 'Win32'); } catch (_) {}
-      try { overrideGetter(Navigator.prototype, 'vendor', () => P.vendor || 'Google Inc.'); } catch (_) {}
+      try { overrideGetter(Navigator.prototype, 'vendor', () => (P.vendor !== undefined ? P.vendor : (P.isFirefox ? '' : 'Google Inc.'))); } catch (_) {}
+      if (P.oscpu !== undefined) {
+        try { overrideGetter(Navigator.prototype, 'oscpu', () => P.oscpu); } catch (_) {}
+      }
       try { overrideGetter(Navigator.prototype, 'maxTouchPoints', () => P.maxTouchPoints || 0); } catch (_) {}
     }
 

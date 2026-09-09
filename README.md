@@ -1,13 +1,13 @@
-# 👻 Ghost Profile — Enterprise Anti-Bot & DOM Hardening Engine (v4.3)
+# 👻 Ghost Profile — Enterprise Anti-Bot & DOM Hardening Engine (v4.4)
 
-[![Version](https://img.shields.io/badge/Version-v4.3.0-blue.svg)](https://github.com/somaylab/ghost-profile/releases/tag/v4.3.0)
+[![Version](https://img.shields.io/badge/Version-v4.4.0-blue.svg)](https://github.com/somaylab/ghost-profile/releases/tag/v4.4.0)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-emerald.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![Chromium Compatible](https://img.shields.io/badge/Chromium-Chrome%20%7C%20Brave%20%7C%20Edge%20%7C%20Opera-purple.svg)](https://google.com/chrome)
 [![Gecko Compatible](https://img.shields.io/badge/Firefox-Gecko%20Compatible-orange.svg)](https://mozilla.org/firefox)
 [![Anti-Bot Audit](https://img.shields.io/badge/Anti--Bot%20Audit-100%25%20Passed-brightgreen.svg)](#-forensic-audit--battle-tested-benchmarks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Ghost Profile v4.3** is an enterprise-grade client-side anti-fingerprinting and DOM prototype hardening engine for **Chromium** (Chrome, Brave, Edge, Opera) and **Mozilla Firefox** (Firefox, LibreWolf). Features hybrid automation with flexible manual customization (custom Screen Resolution, RAM, CPU Cores, and 100+ authentic NVIDIA GPU models) with strict 100% OS isolation and zero prototype tampering artifacts.
+> **Ghost Profile v4.4** is an enterprise-grade client-side anti-fingerprinting and DOM prototype hardening engine for **Chromium** (Chrome, Brave, Edge, Opera) and **Mozilla Firefox** (Firefox, LibreWolf). Features hybrid automation with flexible manual customization (custom Screen Resolution, RAM, CPU Cores, and 100+ authentic NVIDIA GPU models), realistic viewport geometry synchronization, zero extension footprint (no web_accessible_resources leak), deterministic PRNG storage variance, and proactive promo protection.
 
 ---
 
@@ -17,8 +17,8 @@ This repository provides two dedicated builds tailored for their respective brow
 
 | Directory | Target Browsers | Engine & Architecture | Package Download |
 | :--- | :--- | :--- | :--- |
-| **[`ghost-profile/`](./ghost-profile)** | **Google Chrome, Microsoft Edge, Brave, Opera** | Chrome Side Panel API (`manifest.json` MV3) | [ghost-profile-chromium-v4.3.0.zip](https://github.com/somaylab/ghost-profile/releases/download/v4.3.0/ghost-profile-chromium-v4.3.0.zip) |
-| **[`ghost-profile-firefox/`](./ghost-profile-firefox)** | **Mozilla Firefox, Firefox Dev, LibreWolf** | Firefox Sidebar Action API (`manifest.json` Gecko MV3) | [ghost-profile-firefox-v4.3.0.zip](https://github.com/somaylab/ghost-profile/releases/download/v4.3.0/ghost-profile-firefox-v4.3.0.zip) |
+| **[`ghost-profile/`](./ghost-profile)** | **Google Chrome, Microsoft Edge, Brave, Opera** | Chrome Side Panel API (`manifest.json` MV3) | [ghost-profile-chromium-v4.4.0.zip](https://github.com/somaylab/ghost-profile/releases/download/v4.4.0/ghost-profile-chromium-v4.4.0.zip) |
+| **[`ghost-profile-firefox/`](./ghost-profile-firefox)** | **Mozilla Firefox, Firefox Dev, LibreWolf** | Firefox Sidebar Action API (`manifest.json` Gecko MV3) | [ghost-profile-firefox-v4.4.0.zip](https://github.com/somaylab/ghost-profile/releases/download/v4.4.0/ghost-profile-firefox-v4.4.0.zip) |
 
 ## 🛡️ 13-Point Stealth Protection Matrix
 
@@ -76,7 +76,7 @@ graph TD
 6. Click the extension icon or open the **Chrome Side Panel** to launch the Ghost Profile console.
 
 ### 🟠 Mozilla Firefox (Firefox, Firefox Developer Edition, LibreWolf)
-1. Download [`ghost-profile-firefox-v4.2.0.zip`](https://github.com/somaylab/ghost-profile/releases/download/v4.2.0/ghost-profile-firefox-v4.2.0.zip) from [Releases](https://github.com/somaylab/ghost-profile/releases/tag/v4.2.0).
+1. Download [`ghost-profile-firefox-v4.4.0.zip`](https://github.com/somaylab/ghost-profile/releases/download/v4.4.0/ghost-profile-firefox-v4.4.0.zip) from [Releases](https://github.com/somaylab/ghost-profile/releases/tag/v4.4.0).
 2. Extract the zip archive to a local folder.
 3. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`.
 4. Click **Load Temporary Add-on...** and select `manifest.json` in the extracted folder.
